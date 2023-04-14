@@ -1,7 +1,12 @@
 import express from 'express';
 import figlet from 'figlet';
 import { promisify } from 'util';
-import { HyperToast, HyperToastWriter } from './src/index.js';
+import {
+  HyperToast,
+  HyperToastWriter,
+  HTStatusStrategy,
+  HTOnStrategy,
+} from './src/index.js';
 
 const APP_NAME = 'HyperToast';
 const APP_VERSION = '0.0.1';
@@ -26,6 +31,15 @@ app.get('/', (req, res) => {
 app.get('/hypertoast/v1/status', (req, res) => {
   res.set('content-type', 'application/json');
 
+  HyperToastWriter.setStrategy(new HTStatusStrategy());
+  res.json(HyperToastWriter.write(ht.getStatus()));
+});
+
+app.put('/hypertoast/v1/state/on', (req, res) => {
+  res.set('content-type', 'application/json');
+  ht.on();
+
+  HyperToastWriter.setStrategy(new HTOnStrategy());
   res.json(HyperToastWriter.write(ht.getStatus()));
 });
 
