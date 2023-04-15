@@ -21,6 +21,11 @@ class ToasterState {
 class ToasterOnState extends ToasterState {
   name = "on";
   #timestamp = new Date().toISOString();
+  #cookStartTimeMillis = new Date().getTime();
+  #cookSettings = {
+    1: 10000
+  };
+  #cookEndTimeMillis;
   #toaster;
 
   /**
@@ -28,7 +33,9 @@ class ToasterOnState extends ToasterState {
    */
   constructor(ht) {
     super();
+    const cookSettingId = ht.settings.cookLevel[0];
     this.#toaster = ht;
+    this.#cookEndTimeMillis = (this.#cookStartTimeMillis + this.#cookSettings[cookSettingId]);
   }
 
   on() {
@@ -45,7 +52,11 @@ class ToasterOnState extends ToasterState {
     return {
       state: this.name,
       timestamp: this.#timestamp,
-      settings: this.#toaster.settings
+      settings: this.#toaster.settings,
+      cookStartTimeMillis: this.#cookStartTimeMillis,
+      cookEndTimeMillis: this.#cookEndTimeMillis,
+      cookTimeRemainingMillis: this.#cookEndTimeMillis - new Date(this.#timestamp).getTime(),
+      applicationVersion: this.#toaster.applicationVersion
     }
   }
 
@@ -72,13 +83,18 @@ class ToasterWarmingState extends ToasterState {
 
   off() {
     console.log("Toaster is turning off...");
+    this.#toaster.setState(new ToasterOffState(this.#toaster));
   }
 
   getStatus() {
     return {
       state: this.name,
       timestamp: this.#timestamp,
-      settings: this.#toaster.settings
+      settings: this.#toaster.settings,
+      cookStartTimeMillis: this.#toaster.cookStartTimeMillis,
+      cookEndTimeMillis: this.#toaster.cookEndTimeMillis,
+      cookTimeRemainingMillis: this.#toaster.cookEndTimeMillis - new Date(this.#timestamp).getTime(),
+      applicationVersion: this.#toaster.applicationVersion
     }
   }
 
@@ -103,18 +119,22 @@ class ToasterOffState extends ToasterState {
     console.log("Toaster is turning on...");
     setTimeout(()=> {
       this.#toaster.setState(new ToasterWarmingState(this.#toaster));
-    } ,5000)
+    }, 5000)
   }
 
   off() {
     console.log("Toaster is already off.");
+    return this.#toaster;
   }
 
   getStatus() {
     return {
       state: this.name,
       timestamp: this.#timestamp,
-      settings: this.#toaster.settings
+      settings: this.#toaster.settings,
+      cookStartTimeMillis: null,
+      cookTimeRemainingMillis: 0,
+      applicationVersion: this.#toaster.applicationVersion
     }
   }
 
