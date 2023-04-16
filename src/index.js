@@ -2,7 +2,7 @@ import { ToasterOffState } from './states.js';
 import halson from 'halson';
 
 class HyperToast {
-  currentState;
+  state;
   settings;
   deviceName;
   applicationVersion = "0.0.1";
@@ -10,31 +10,27 @@ class HyperToast {
   constructor(name, settings = {}) {
     this.deviceName = name;
     this.settings = settings;
-    this.currentState = new ToasterOffState(this);
+    this.state = new ToasterOffState(this);
   }
 
   on() {
-    this.currentState.on();
-    return this.currentState;
+    return this.state.on();
   }
 
   off() {
-    this.currentState.off();
+    return this.state.off();
   }
 
-  setState(state) {
-    this.currentState = state;
+  setState(state) { 
+    this.state = state;
   }
 
   getStatus() {
     return {
+      applicationVersion: this.applicationVersion,
       deviceName: this.deviceName,
       settings: this.settings,
-      applicationVersion: this.applicationVersion,
-      cookStartTimeMillis: null,
-      cookEndTimeMillis: null,
-      cookTimeRemainingMillis: null,
-      ...this.currentState,
+      ...this.state
     };
   }
 }

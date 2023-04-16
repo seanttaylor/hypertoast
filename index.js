@@ -19,7 +19,12 @@ const app = express();
 
 let ht = new HyperToast('HyperToast', {
   mode: ['bagel'],
-  cookLevel: [1],
+  cookConfig: {
+    level: [1],
+    timer: {
+      1: 50000,
+    }
+  }
 });
 
 app.get('/', (req, res) => {

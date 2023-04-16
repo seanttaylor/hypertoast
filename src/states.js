@@ -1,31 +1,20 @@
 class ToasterState {
-  #currentState;
-
-  constructor() {
-
-  }
+  name;
+  timestamp;
+  cookEndTimeMillis;
+  cookStartTimeMillis;
+  cookTimeRemainingMillis;
 
   on() {
 
   }
 
   off() {
-
-  }
-
-  getStatus() {
 
   }
 }
 
 class ToasterOnState extends ToasterState {
-  name = "on";
-  #timestamp = new Date().toISOString();
-  #cookStartTimeMillis = new Date().getTime();
-  #cookSettings = {
-    1: 10000
-  };
-  #cookEndTimeMillis;
   #toaster;
 
   /**
@@ -33,77 +22,63 @@ class ToasterOnState extends ToasterState {
    */
   constructor(ht) {
     super();
-    const cookSettingId = ht.settings.cookLevel[0];
+
+    const cookSettingId = ht.settings.cookConfig.level[0];
+    const cookTime = ht.settings.cookConfig.timer[cookSettingId];    
+
+    this.name = "on";
+    this.timestamp = new Date().toISOString();
+    this.cookStartTimeMillis = new Date().getTime();
+    this.cookEndTimeMillis = this.cookStartTimeMillis + cookTime;
+    //this.cookTimeRemainingMillis = this.cookEndTimeMillis - new Date(this.timestamp).getTime();
+    this.cookTimeRemainingMillis = this.cookEndTimeMillis;
+
     this.#toaster = ht;
-    this.#cookEndTimeMillis = (this.#cookStartTimeMillis + this.#cookSettings[cookSettingId]);
   }
 
   on() {
-    console.log("Toaster is already on.");
-
+    console.log('Toaster is already on.');
   }
 
   off() {
-    console.log("Toaster is turning off...");
+    console.log('Toaster is turning off...');
     this.#toaster.setState(new ToasterOffState(this.#toaster));
+    return this.#toaster;
   }
-
-  getStatus() {
-    return {
-      state: this.name,
-      timestamp: this.#timestamp,
-      settings: this.#toaster.settings,
-      cookStartTimeMillis: this.#cookStartTimeMillis,
-      cookEndTimeMillis: this.#cookEndTimeMillis,
-      cookTimeRemainingMillis: this.#cookEndTimeMillis - new Date(this.#timestamp).getTime(),
-      applicationVersion: this.#toaster.applicationVersion
-    }
-  }
-
 }
 
 class ToasterWarmingState extends ToasterState {
-  name = "warming";
-  #timestamp = new Date().toISOString();
   #toaster;
-
 
   /**
    * @param {HyperToast} ht
    */
   constructor(ht) {
     super();
+
+    this.name = "warming";
+    this.timestamp = new Date().toISOString();
+    this.cookEndTimeMillis = ht.state.cookEndTimeMillis;
+    this.cookStartTimeMillis = ht.state.cookStartTimeMillis;
+    this.cookTimeRemainingMillis = (this.cookEndTimeMillis - new Date(this.timestamp).getTime());
+
     this.#toaster = ht;
-    console.log("Toaster is warming...");
+
+    console.log('Toaster is warming...');
   }
 
   on() {
-    console.log("Toaster is already on.");
+    console.log('Toaster is already on.');
   }
 
   off() {
-    console.log("Toaster is turning off...");
+    console.log('Toaster is turning off...');
     this.#toaster.setState(new ToasterOffState(this.#toaster));
+    return this.#toaster;
   }
-
-  getStatus() {
-    return {
-      state: this.name,
-      timestamp: this.#timestamp,
-      settings: this.#toaster.settings,
-      cookStartTimeMillis: this.#toaster.cookStartTimeMillis,
-      cookEndTimeMillis: this.#toaster.cookEndTimeMillis,
-      cookTimeRemainingMillis: this.#toaster.cookEndTimeMillis - new Date(this.#timestamp).getTime(),
-      applicationVersion: this.#toaster.applicationVersion
-    }
-  }
-
-
 }
 
-class ToasterOffState extends ToasterState { 
-  name = "off";
-  #timestamp = new Date().toISOString();
+class ToasterOffState extends ToasterState {
   #toaster;
 
   /**
@@ -111,37 +86,29 @@ class ToasterOffState extends ToasterState {
    */
   constructor(ht) {
     super();
+
+    this.name = "off";
+    this.timestamp = new Date().toISOString();
+    this.cookEndTimeMillis = null;
+    this.cookStartTimeMillis = null;
+    this.cookTimeRemainingMillis = null;
+
     this.#toaster = ht;
   }
 
   on() {
+    console.log("Toaster is turning on...");    
     this.#toaster.setState(new ToasterOnState(this.#toaster));
-    console.log("Toaster is turning on...");
-    setTimeout(()=> {
+    setTimeout(() => {
       this.#toaster.setState(new ToasterWarmingState(this.#toaster));
-    }, 5000)
-  }
-
-  off() {
-    console.log("Toaster is already off.");
+    }, 5000);
     return this.#toaster;
   }
 
-  getStatus() {
-    return {
-      state: this.name,
-      timestamp: this.#timestamp,
-      settings: this.#toaster.settings,
-      cookStartTimeMillis: null,
-      cookTimeRemainingMillis: 0,
-      applicationVersion: this.#toaster.applicationVersion
-    }
+  off() {
+    console.log('Toaster is already off.');
+    return this.#toaster;
   }
-
 }
 
-export {
-  ToasterOffState,
-  ToasterOnState,
-  ToasterWarmingState
-}
+export { ToasterOffState, ToasterOnState, ToasterWarmingState };
