@@ -58,6 +58,6 @@ app.put('/hypertoast/v1/state/off', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(banner);
-  console.log(`App listening at http://localhost:${PORT}`);
+  console.log(banner + '\n');
+  console.log(` App listening at http://localhost:${PORT}`);
 });
