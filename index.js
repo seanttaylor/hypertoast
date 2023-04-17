@@ -1,13 +1,16 @@
 import express from 'express';
+import bodyParser from 'body-parser';
+import morgan from 'morgan';
 import figlet from 'figlet';
+
 import { promisify } from 'util';
+import { HyperToast } from './src/hypertoast/index.js';
 import {
-  HyperToast,
   HyperToastWriter,
   HTStatusStrategy,
   HTOnStrategy,
   HTOffStrategy
-} from './src/index.js';
+} from './src/ht-writer/index.js';
 
 const APP_NAME = 'hypertoast';
 const APP_VERSION = '0.0.1';
@@ -16,6 +19,10 @@ const PORT = 3010;
 const figletize = promisify(figlet);
 const banner = await figletize(`${APP_NAME} v${APP_VERSION}`);
 const app = express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(morgan('tiny'));
 
 let ht = new HyperToast('HyperToast', {
   mode: ['bagel'],
@@ -57,7 +64,17 @@ app.put('/hypertoast/v1/state/off', (req, res) => {
   res.json(HyperToastWriter.write(ht.getStatus()));
 });
 
+app.use((req, res) => {
+  res.status(404).send({ status: 404, error: 'Not Found' });
+});
+
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  console.error(err);
+  res.status(status).send({ status, error: 'There was an error.' });
+});
+
 app.listen(PORT, () => {
-  console.log(banner + '\n');
+  console.log(banner);
   console.log(` App listening at http://localhost:${PORT}`);
 });

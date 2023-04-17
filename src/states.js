@@ -1,5 +1,8 @@
-import { HyperToast } from "./index.js";
+import { HyperToast } from "../src/hypertoast/index.js";
 
+/**
+ * Configures a discrete state change during the cooking process
+ */
 class ToasterState {
   name;
   timestamp;
@@ -9,7 +12,7 @@ class ToasterState {
   cookInProgress = false;
 
   /**
-   * 
+   * Calcutaes the remaining time to cook the toast
    * @returns {Number}
    */
   getCookTimeRemaining(timestamp) {
@@ -18,6 +21,7 @@ class ToasterState {
   }
 
   /**
+   * Turns the toaster on
    * @returns {HyperToast}
    */
   on() {
@@ -25,6 +29,7 @@ class ToasterState {
   }
 
   /**
+   * Turns the toaster off
    * @returns {HyperToast}
    */
   off() {
