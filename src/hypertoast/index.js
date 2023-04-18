@@ -21,6 +21,8 @@ class HyperToast {
   }
 
   setState(state) { 
+    //console.log(state);
+    console.log(state.statusMessage);
     this.state = state;
   }
 

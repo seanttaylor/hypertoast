@@ -1,9 +1,43 @@
 import { HyperToast } from "../src/hypertoast/index.js";
 
+/***
+ *
+ */
+class ToasterStateFactoryAbs {
+  /**
+   * Creates a new instance of ToasterState
+   * @return {ToasterState}
+   */
+  static create() {}
+}
+
 /**
- * Configures a discrete state change during the cooking process
+ *
+ */
+class ToasterPreheatingStateFactory extends ToasterStateFactoryAbs {
+  versionMap = {
+    '0.0.1': ToasterPreheatingStateDefault,
+    '0.0.2': ToasterPreheatingStateEnhanced,
+  };
+
+  /**
+   * @param {HyperToast}
+   */
+  create(ht) {
+    const PreheatingProgram = this.versionMap[ht.applicationVersion];
+    return new PreheatingProgram(ht);
+  }
+
+  static getInstance() {
+    return new ToasterPreheatingStateFactory();
+  }
+}
+
+/**
+ * Describes a discrete state in the toaster cook cycle
  */
 class ToasterState {
+  statusMessage;
   name;
   timestamp;
   cookEndTimeMillis;
@@ -12,31 +46,31 @@ class ToasterState {
   cookInProgress = false;
 
   /**
-   * Calcutaes the remaining time to cook the toast
+   * Calculates the cooking time left
+   * @param {String} timestamp - an ISO Date String (e.g.
+   * new Date().toISOString())
    * @returns {Number}
    */
   getCookTimeRemaining(timestamp) {
-    //return (this.cookEndTimeMillis - new Date(this.timestamp).getTime());
-    return (this.cookEndTimeMillis - new Date(timestamp).getTime());
+    return this.cookEndTimeMillis - new Date(timestamp).getTime();
   }
 
   /**
-   * Turns the toaster on
+   * Runs the specified logic when `off` method is called in this state
    * @returns {HyperToast}
    */
-  on() {
-
-  }
+  on() {}
 
   /**
-   * Turns the toaster off
+   * Runs the specified logic when `off` method is called in this state
    * @returns {HyperToast}
    */
-  off() {
-
-  }
+  off() {}
 }
 
+/**
+ *
+ */
 class ToasterOnState extends ToasterState {
   #toaster;
 
@@ -47,9 +81,10 @@ class ToasterOnState extends ToasterState {
     super();
 
     const cookSettingId = ht.settings.cookConfig.level[0];
-    const cookTime = ht.settings.cookConfig.timer[cookSettingId];    
+    const cookTime = ht.settings.cookConfig.timer[cookSettingId];
 
-    this.name = "on";
+    this.statusMessage = 'Toaster is turning on...';
+    this.name = 'on';
     this.timestamp = new Date().toISOString();
     this.cookStartTimeMillis = new Date().getTime();
     this.cookEndTimeMillis = this.cookStartTimeMillis + cookTime;
@@ -69,7 +104,10 @@ class ToasterOnState extends ToasterState {
   }
 }
 
-class ToasterWarmingState extends ToasterState {
+/**
+ *
+ */
+class ToasterPreheatingStateDefault extends ToasterState {
   #toaster;
 
   /**
@@ -77,11 +115,11 @@ class ToasterWarmingState extends ToasterState {
    */
   constructor(ht) {
     super();
-    console.log('Toaster is warming...');
 
     const WARMING_INTERVAL_MILLIS = 10000;
 
-    this.name = "warming";
+    this.statusMessage = 'Toaster is preheating...';
+    this.name = 'preheating';
     this.timestamp = new Date().toISOString();
     this.cookEndTimeMillis = ht.state.cookEndTimeMillis;
     this.cookStartTimeMillis = ht.state.cookStartTimeMillis;
@@ -105,6 +143,29 @@ class ToasterWarmingState extends ToasterState {
   }
 }
 
+/**
+ *
+ */
+class ToasterPreheatingStateEnhanced extends ToasterPreheatingStateDefault {
+  #toaster;
+
+  /**
+   * @param {HyperToast} ht
+   */
+  constructor(ht) {
+    super(ht);
+    this.statusMessage = 'Toaster preheating in enhanced mode...';
+  }
+
+  off() {
+    this.#toaster.setState(new ToasterOffState(this.#toaster));
+    return this.#toaster;
+  }
+}
+
+/**
+ *
+ */
 class ToasterCookingState extends ToasterState {
   #toaster;
 
@@ -117,22 +178,21 @@ class ToasterCookingState extends ToasterState {
     const COOK_INTERVAL_MILLIS = 1000;
     let cookIntervalHook;
 
-    this.name = "cooking";
+    this.statusMessage = 'Toaster is cooking...';
+    this.name = 'cooking';
     this.timestamp = new Date().toISOString();
     this.cookInProgress = true;
 
     this.cookEndTimeMillis = ht.state.cookEndTimeMillis;
     this.cookStartTimeMillis = ht.state.cookStartTimeMillis;
     this.cookTimeRemainingMillis = this.getCookTimeRemaining(this.timestamp);
-    
-    if (!ht.state.cookInProgress) {
-      console.log('Toaster is cooking...');
 
+    if (!ht.state.cookInProgress) {
       cookIntervalHook = setInterval(() => {
-        // We use a new `Date` instance because using `this.timestamp` would bind the value of `this.timestamp` 
-        // to the context of the `setInterval` function causing the `getCookTimeRemaining` method to 
+        // We use a new `Date` instance because using `this.timestamp` would bind the value of `this.timestamp`
+        // to the context of the `setInterval` function causing the `getCookTimeRemaining` method to
         // return the same value resulting in an infinite loop and BURNT TOAST!
-        
+
         if (this.getCookTimeRemaining(new Date().toISOString()) <= 0) {
           clearInterval(cookIntervalHook);
           this.off();
@@ -143,7 +203,7 @@ class ToasterCookingState extends ToasterState {
       }, COOK_INTERVAL_MILLIS);
     }
 
-    this.#toaster = ht;    
+    this.#toaster = ht;
   }
 
   on() {
@@ -151,12 +211,14 @@ class ToasterCookingState extends ToasterState {
   }
 
   off() {
-    console.log('Toaster is turning off...');
     this.#toaster.setState(new ToasterOffState(this.#toaster));
     return this.#toaster;
   }
 }
 
+/**
+ *
+ */
 class ToasterOffState extends ToasterState {
   #toaster;
 
@@ -166,7 +228,8 @@ class ToasterOffState extends ToasterState {
   constructor(ht) {
     super();
 
-    this.name = "off";
+    this.statusMessage = 'Toaster is turning off...';
+    this.name = 'off';
     this.timestamp = new Date().toISOString();
     this.cookEndTimeMillis = null;
     this.cookStartTimeMillis = null;
@@ -176,10 +239,10 @@ class ToasterOffState extends ToasterState {
   }
 
   on() {
-    console.log("Toaster is turning on...");    
     this.#toaster.setState(new ToasterOnState(this.#toaster));
     setTimeout(() => {
-      this.#toaster.setState(new ToasterWarmingState(this.#toaster));
+      const myTPSFactory = ToasterPreheatingStateFactory.getInstance();
+      this.#toaster.setState(myTPSFactory.create(this.#toaster));
     }, 5000);
     return this.#toaster;
   }
@@ -190,4 +253,9 @@ class ToasterOffState extends ToasterState {
   }
 }
 
-export { ToasterOffState, ToasterOnState, ToasterWarmingState, ToasterCookingState };
+export {
+  ToasterOffState,
+  ToasterOnState,
+  ToasterPreheatingStateDefault,
+  ToasterCookingState,
+};
