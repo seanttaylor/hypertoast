@@ -1,6 +1,32 @@
 import halson from 'halson';
 import { HyperToast } from '../hypertoast/index.js';
 
+const linkRelations = {
+  home: {
+    href: '/hypertoast',
+    title: 'Initialize the device',
+  },
+  on: {
+    href: '/hypertoast/v1/state/on',
+    title: 'Turn on the toaster',
+    rel: '/hypertoast/relations/on'
+  },
+  off: {
+    href: '/hypertoast/v1/state/off',
+    title: 'Turn off the toaster',
+    rel: '/hypertoast/relations/off'
+  },
+  status: {
+    href: '/hypertoast/v1/status',
+    title: 'Access device info',
+  },
+  settings: {
+    href: '/hypertoast/v1/settings',
+    title: 'Configure device settings',
+    rel: '/hypertoast/relations/settings'
+  },
+};
+
 /**
  * Prints a HyperToast instance
  */
@@ -44,23 +70,14 @@ class HTStatusStrategy extends HyperToastWriterStrategy {
      */
     write(ht) {
       return halson(ht)
-        .addLink('self', '/hypertoast/v1/status')
-        .addLink('off', {
-          href: '/hypertoast/v1/state/off',
-          title: 'Turn off the toaster',
+        .addLink('self', {
+          href: '/hypertoast/v1/status',
+          rel: '/hypertoast/relations/self'
         })
-        .addLink('on', {
-          href: '/hypertoast/v1/state/on',
-          title: 'Turn on the toaster',
-        })
-        .addLink('settings', {
-          href: '/hypertoast/v1/settings',
-          title: 'Configure device settings',
-        })
-        .addLink('home', {
-          href: '/hypertoast',
-          title: 'Initialize the device',
-        });
+        .addLink('off', linkRelations.off)
+        .addLink('on', linkRelations.on)
+        .addLink('settings', linkRelations.settings)
+        .addLink('home', linkRelations.home);
     }
 }
   
@@ -69,29 +86,21 @@ class HTStatusStrategy extends HyperToastWriterStrategy {
  */
 class HTOnStrategy extends HyperToastWriterStrategy {
 
-/**
- * @param {HyperToast} - an instance of HyperToast
- */
-write(ht) {
-    return halson(ht)
-    .addLink('self', '/hypertoast/v1/state/on')
-    .addLink('off', {
-        href: '/hypertoast/v1/state/off',
-        title: 'Turn off the toaster',
-    })
-    .addLink('status', {
-        href: '/hypertoast/v1/status',
-        title: 'Access device info',
-    })
-    .addLink('settings', {
-        href: '/hypertoast/v1/settings',
-        title: 'Configure device settings',
-    })
-    .addLink('home', {
-        href: '/hypertoast',
-        title: 'Initialize the device',
-    });
-}
+  /**
+   * @param {HyperToast} - an instance of HyperToast
+   */
+  write(ht) {
+      return halson(ht)
+      .addLink('self', {
+        href: '/hypertoast/v1/state/on',
+        rel: '/hypertoast/relations/self'
+      })
+
+      .addLink('off', linkRelations.off)
+      .addLink('status', linkRelations.status)
+      .addLink('settings', linkRelations.settings)
+      .addLink('home', linkRelations.home);
+  }
 }
   
 /**
@@ -99,30 +108,48 @@ write(ht) {
  */
 class HTOffStrategy extends HyperToastWriterStrategy {
   
-    /**
-     * @param {HyperToast} - an instance of HyperToast
-     */
-    write(ht) {
-      return halson(ht)
-        .addLink('self', '/hypertoast/v1/state/off')
-        .addLink('on', {
-          href: '/hypertoast/v1/state/on',
-          title: 'Turn on the toaster',
-        })
-        .addLink('status', {
-          href: '/hypertoast/v1/status',
-          title: 'Access device info',
-        })
-        .addLink('settings', {
-          href: '/hypertoast/v1/settings',
-          title: 'Configure device settings',
-        })
-        .addLink('home', {
-          href: '/hypertoast',
-          title: 'Initialize the device',
-        });
-    }
+  /**
+   * @param {HyperToast} - an instance of HyperToast
+   */
+  write(ht) {
+    return halson(ht)
+      .addLink('self', {
+        href: '/hypertoast/v1/state/off',
+        rel: '/hypertoast/relations/self'
+      })
+      .addLink('on', linkRelations.on)
+      .addLink('off', linkRelations.off)
+      .addLink('status', linkRelations.status)
+      .addLink('settings', linkRelations.settings)
+      .addLink('home', linkRelations.home);
+  }
+}
+
+/**
+ * Prints a representation of the 'home' state in the HAL hypermedia format
+ */
+class HTHomeStrategy extends HyperToastWriterStrategy {
   
+  /**
+   * @param {HyperToast} - an instance of HyperToast
+   */
+  write(ht) {
+    return halson(ht)
+      .addLink('self', {
+        href: '/hypertoast',
+        rel: '/hypertoast/relations/self'
+      })
+      .addLink('off', linkRelations.off)
+      .addLink('on', linkRelations.on)
+      .addLink('status', linkRelations.status)
+      .addLink('settings', linkRelations.settings)
+  }
 }
   
-export { HyperToastWriter, HTStatusStrategy, HTOnStrategy, HTOffStrategy };
+export { 
+  HyperToastWriter, 
+  HTStatusStrategy, 
+  HTOnStrategy, 
+  HTOffStrategy,
+  HTHomeStrategy 
+};

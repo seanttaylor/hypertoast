@@ -9,7 +9,8 @@ import {
   HyperToastWriter,
   HTStatusStrategy,
   HTOnStrategy,
-  HTOffStrategy
+  HTOffStrategy,
+  HTHomeStrategy
 } from './src/ht-writer/index.js';
 
 const APP_NAME = 'hypertoast';
@@ -34,11 +35,11 @@ let ht = new HyperToast('HyperToast', {
   }
 });
 
-app.get('/', (req, res) => {
-  res.json({
-    application: APP_NAME,
-    version: APP_VERSION,
-  });
+app.get('/hypertoast', (req, res) => {
+  res.set('content-type', 'application/json');
+  
+  HyperToastWriter.setStrategy(new HTHomeStrategy());
+  res.json(HyperToastWriter.write(ht.getStatus()));
 });
 
 app.get('/hypertoast/v1/status', (req, res) => {
