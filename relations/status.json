@@ -1,0 +1,5 @@
+{   
+    "title": "Device Status",
+    "name": "status",
+    "description": "The 'status' link relation is used to provide web clients with real-time updates on the current status of the smart toaster, as well as device information related to the toaster. This link relation enable clients to monitor the operation of the toaster and view relevant information about its configuration and performance. Exampes include whether it is currently toasting bread or is idle, as well as device information such as the firmware version, network connectivity status, and other technical details."
+}

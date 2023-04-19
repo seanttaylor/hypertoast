@@ -1,3 +1,4 @@
-# hypertoast
+# HyperToast
 
-[Edit on StackBlitz ⚡️](https://stackblitz.com/edit/express-simple-uwxdld)
+## A hypermedia-enabled smart toaster
+

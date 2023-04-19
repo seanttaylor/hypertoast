@@ -1,0 +1,6 @@
+{   
+    "title": "The Off State",
+    "name": "of",
+    "description": "The 'off' link relation is used to indicate the deactivation of the smart toaster. When a client deactivates the toaster, it enters an 'off' state, indicating that it is no longer ready to toast bread or other items. Following this link relation, it triggers the deactivation of the toaster and set it to the appropriate state for storing or cleaning.",
+    "requestMethod": ["PUT"]
+}

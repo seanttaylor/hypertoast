@@ -228,7 +228,7 @@ class ToasterOffState extends ToasterState {
   constructor(ht) {
     super();
 
-    this.statusMessage = 'Toaster is turning off...';
+    this.statusMessage = 'Toaster is off';
     this.name = 'off';
     this.timestamp = new Date().toISOString();
     this.cookEndTimeMillis = null;

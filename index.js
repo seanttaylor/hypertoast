@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import figlet from 'figlet';
+import path from 'path';
 
 import { promisify } from 'util';
 import { HyperToast } from './src/hypertoast/index.js';
@@ -33,6 +34,14 @@ let ht = new HyperToast('HyperToast', {
       1: 50000,
     }
   }
+});
+
+app.get('/hypertoast/relations/:rel', (req, res) => {
+  res.sendFile(path.resolve(`relations/${req.params.rel}.json`));
+});
+
+app.get('/hypertoast/schemas/:rel', (req, res) => {
+  res.sendFile(path.resolve(`schemas/${req.params.rel}.json`));
 });
 
 app.get('/hypertoast', (req, res) => {
