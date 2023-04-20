@@ -1,0 +1,19 @@
+FROM node:18-alpine
+
+RUN mkdir /src
+
+COPY ./src/hypertoast /src
+COPY ./src/ht-writer /src
+COPY ./index.js /src
+COPY ./package.json /src
+COPY ./package-lock.json /src
+
+RUN chown node -R /src
+
+WORKDIR /src
+
+EXPOSE 3010
+
+RUN npm ci --omit=dev
+
+CMD [ "npm", "run", "start:hypertoast" ]

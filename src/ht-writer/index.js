@@ -19,6 +19,7 @@ const linkRelations = {
   status: {
     href: '/hypertoast/v1/status',
     title: 'Access device info',
+    rel: '/hypertoast/relations/status'
   },
   settings: {
     href: '/hypertoast/v1/settings',

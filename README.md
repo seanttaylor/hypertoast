@@ -1,4 +1,4 @@
 # HyperToast
 
-### A hypermedia-enabled smart toaster
+A hypermedia-enabled smart toaster
 
