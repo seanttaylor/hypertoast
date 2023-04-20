@@ -23,6 +23,8 @@ services:
       APP_NAME: hypertoast
       APP_VERSION: "0.0.1"
       HYPERTOAST_ENTRYPOINT_URL: http://hypertoast:3010/hypertoast
+    depends_on:
+      - hypertoast
     volumes:
       - ./:/src
     networks:

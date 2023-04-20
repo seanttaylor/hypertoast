@@ -1,0 +1,6 @@
+{   
+    "title": "Self",
+    "name": "self",
+    "description": "The current resource",
+    "schema": "/schemas/v1/self.json"
+}

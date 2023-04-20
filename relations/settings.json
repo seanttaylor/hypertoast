@@ -2,6 +2,6 @@
     "title": "Device Settings",
     "name": "settings",
     "description": "The 'settings' link relation is used to provide web clients with the ability to adjust the settings of the smart toaster and to customize the functionality of the toaster to better suit their needs and preferences. Clients may adjust various settings, such as the toasting time, the level of toasting, and the type of bread that is being toasted. ",
-    "requestMethod": ["PUT"],
+    "method": "PUT",
     "schema": "/schemas/v1/settings.json"
 }

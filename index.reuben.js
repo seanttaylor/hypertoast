@@ -17,15 +17,19 @@ const banner = await figletize(`${APP_NAME} v${APP_VERSION}`);
       const initRequest = await fetch(HYPERTOAST_ENTRYPOINT_URL);  
       
       const response = await initRequest.json();
-  
-      //console.log(response._links);
-  
+    
       htReuben.parseAdvertisedLinks(response._links);
-      //const statusRequest = await htReuben.request("status")();
+      await htReuben.cacheAdvertisedLinkRelations();
+      setTimeout(async () => {
+        const statusRequest = await htReuben.request('status');
+        console.log({statusRequest});
+      }, 10000);
+    
       //const hyperToastRequest = await htReuben.request("settings")();
-  
   
     } catch(e) {
       console.error(e);
     }
+
+    return {}
 }());
