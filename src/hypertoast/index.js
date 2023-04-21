@@ -36,4 +36,5 @@ class HyperToast {
   }
 }
 
+
 export { HyperToast };

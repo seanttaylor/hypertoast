@@ -45,6 +45,37 @@ let ht = new HyperToast('HyperToast', {
   }
 });
 
+/**
+ * 
+ */
+const HTSubscriberPlugin = {
+  subscriptions: {},
+  setState(state) {
+    console.log(state);
+    this.state = state;
+    if(this.subscriptions[state.name]) {
+      this.subscriptions[state.name].forEach((fn) => fn(state));
+    };
+  },
+  registerEvent(stateName, fn) {
+    if (this.subscriptions[stateName]) {
+      this.subscriptions[stateName].push(fn);
+      return;
+    }
+    this.subscriptions[stateName] = [];
+    this.subscriptions[stateName].push(fn);
+  }
+};
+
+ht = Object.assign(ht, HTSubscriberPlugin);
+ht.registerEvent("off", onToasterOff);
+
+/******** SUBSCRIPTIONS ********/ 
+function onToasterOff(state) {
+  console.log("Firing Toaster Off Event...");
+}
+
+/******** ROUTES ********/
 app.get('/hypertoast/relations/:rel', (req, res) => {
   res.sendFile(path.resolve(`relations/${req.params.rel}.json`));
 });
