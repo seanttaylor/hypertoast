@@ -15,6 +15,7 @@ class ToasterStateFactoryAbs {
  *
  */
 class ToasterPreheatingStateFactory extends ToasterStateFactoryAbs {
+  static instance;
   versionMap = {
     '0.0.1': ToasterPreheatingStateDefault,
     '0.0.2': ToasterPreheatingStateEnhanced,
@@ -29,7 +30,12 @@ class ToasterPreheatingStateFactory extends ToasterStateFactoryAbs {
   }
 
   static getInstance() {
-    return new ToasterPreheatingStateFactory();
+    if (ToasterPreheatingStateFactory.instance) {
+      return ToasterPreheatingStateFactory.instance;
+    }
+
+    ToasterPreheatingStateFactory.instance = new ToasterPreheatingStateFactory();
+    return ToasterPreheatingStateFactory.instance;
   }
 }
 

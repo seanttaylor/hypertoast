@@ -35,10 +35,22 @@ class HyperToastClient {
  * 
  */
 class HTReuben extends HyperToastClient {
-  #rootURL = 'http://hypertoast:3010';
   #links = {};
-  #linkRelations = {}
+  #linkRelations = {};
+  #onReady;
+  #rootURL; 
 
+  /**
+   * 
+   * @param {String} rootURL 
+   * @param {Function} onReady
+   */
+  constructor(rootURL, onReady) {
+    super();
+    this.#rootURL = rootURL;
+    this.#onReady = onReady;
+
+  }
   /**
    * @param {Object}
    */
@@ -48,11 +60,6 @@ class HTReuben extends HyperToastClient {
     Object.entries(links).forEach(([advertisedLink, linkDescription])=> {
       this.#links[advertisedLink] = linkDescription;
       this.#linkRelations[linkDescription.rel] = {};
-      //console.log(linkDescription.rel);
-      /*
-        follow each link at `linkDescription.rel`
-        cache the response in #linkRelations with the key `relationDescription.rel` 
-      */
     });
 
   }
@@ -61,9 +68,10 @@ class HTReuben extends HyperToastClient {
    * 
    */
   async cacheAdvertisedLinkRelations() {
-    console.log("Caching link relations...");
+    console.log('Caching link relations...');
+    const linkRelations = Object.keys(this.#linkRelations);
     
-    Object.keys(this.#linkRelations).map(async (rel)=> {
+    linkRelations.map(async (rel, idx,)=> {
       const response = await fetch(`${this.#rootURL}${rel}`);
       const relationDoc = await response.json();
 
@@ -71,6 +79,14 @@ class HTReuben extends HyperToastClient {
         ETag: response.headers.get('etag'),
         ...relationDoc
       };
+
+      // Hacky way to determine when the asnyc processing is complete
+      // We fire off the client-defined `onReady` method when all link relations are known providing 
+      // a hook into the current context with `this`
+      if (idx === linkRelations.length - 1) {
+        console.log('Caching complete...');
+        this.#onReady(this);
+      }
     });
   }
 
@@ -92,7 +108,7 @@ class HTReuben extends HyperToastClient {
    * @param {String} rel
    * @return {Object}
    */
-  async request(rel) {
+  request(rel) {
     const URL = `${this.#rootURL}${this.#links[rel].href}`;
     const relId = this.#links[rel].rel;
     const method = this.#linkRelations[relId].method || "GET";
@@ -102,27 +118,31 @@ class HTReuben extends HyperToastClient {
     // this.parseAdvertisedLinks(response);
     //console.log({ URL, method, ETag });
 
-    let response;
-
     if (!URL) {
       // do something if the link relation doesn't exist
       return;
     }
 
-    if (method !== 'GET') {
-      response = await fetch(URL, {
+    /**
+     * @param {Object} body - request body 
+     */
+    return async function(body={}) {
+      const options = {
         method,
-        body: {},
         headers: {
           "Content-Type": "application/json",
         }
-      });
+      };
 
+      // We only want to attach a body to *non* GET requests
+      if (options.method !== 'GET') {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch(URL, options);
       return response.json();      
     }
-
-    response = await fetch(URL);
-    return response.json(); 
+       
   }
 }
 

@@ -6,17 +6,26 @@ import path from 'path';
 
 import { promisify } from 'util';
 import { HyperToast } from './src/hypertoast/index.js';
+import validateRequest from './src/middleware/validate.js';
+import settingsSchemav1 from './schemas/settings-1.js';
+import settingsSchemav2 from './schemas/settings.js';
+
 import {
   HyperToastWriter,
   HTStatusStrategy,
   HTOnStrategy,
   HTOffStrategy,
+  HTSettingsStrategy,
   HTHomeStrategy
 } from './src/ht-writer/index.js';
 
 const APP_NAME = 'hypertoast';
 const APP_VERSION = '0.0.1';
 const PORT = 3010;
+const settingsSchema = {
+  'https://localhost:3010/hypertoast/schemas/settings-1': settingsSchemav1,
+  'https://localhost:3010/hypertoast/schemas/settings': settingsSchemav2
+};
 
 const figletize = promisify(figlet);
 const banner = await figletize(`${APP_NAME} v${APP_VERSION}`);
@@ -52,7 +61,8 @@ app.get('/hypertoast', (req, res) => {
 });
 
 app.get('/hypertoast/v1/status', (req, res) => {
-  res.set('content-type', 'application/json');
+  //res.set('content-type', 'application/json');
+  res.set('content-type', 'application/vnd.hypertoast');
 
   HyperToastWriter.setStrategy(new HTStatusStrategy());
   res.json(HyperToastWriter.write(ht.getStatus()));
@@ -71,6 +81,16 @@ app.put('/hypertoast/v1/state/off', (req, res) => {
   ht = ht.off();
 
   HyperToastWriter.setStrategy(new HTOffStrategy());
+  res.json(HyperToastWriter.write(ht.getStatus()));
+});
+
+app.put('/hypertoast/v1/settings', validateRequest(settingsSchema), (req, res) => {
+  //res.set('content-type', 'application/json');
+  res.set('content-type', 'application/vnd.hypertoast');
+   
+  ht.settings = req.body;
+
+  HyperToastWriter.setStrategy(new HTSettingsStrategy());
   res.json(HyperToastWriter.write(ht.getStatus()));
 });
 

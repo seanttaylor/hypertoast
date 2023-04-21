@@ -146,11 +146,33 @@ class HTHomeStrategy extends HyperToastWriterStrategy {
       .addLink('settings', linkRelations.settings)
   }
 }
+
+/**
+ * Prints a representation of the 'home' state in the HAL hypermedia format
+ */
+class HTSettingsStrategy extends HyperToastWriterStrategy {
+  
+  /**
+   * @param {HyperToast} - an instance of HyperToast
+   */
+  write(ht) {
+    return halson(ht)
+      .addLink('self', {
+        href: '/hypertoast/v1/settings',
+        rel: '/hypertoast/relations/self'
+      })
+      .addLink('off', linkRelations.off)
+      .addLink('on', linkRelations.on)
+      .addLink('status', linkRelations.status)
+      .addLink('settings', linkRelations.settings)
+  }
+}
   
 export { 
   HyperToastWriter, 
   HTStatusStrategy, 
   HTOnStrategy, 
   HTOffStrategy,
+  HTSettingsStrategy,
   HTHomeStrategy 
 };

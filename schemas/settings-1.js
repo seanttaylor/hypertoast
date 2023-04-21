@@ -1,9 +1,9 @@
-{
-    "$schema": "https://json-schema.org/draft/2017-09/schema",
-    "$id": "http://example.com/example.json",
+export default {
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://com.hypertoast/settings-1.json",
     "type": "object",
     "default": {},
-    "title": "The Settings Schema",
+    "title": "The version 1 Settings Schema",
     "required": [
         "mode",
         "cookConfig"
