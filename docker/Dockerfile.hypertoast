@@ -4,6 +4,9 @@ RUN mkdir /src
 
 COPY ./src/hypertoast /src
 COPY ./src/ht-writer /src
+COPY ./src/middleware /src
+COPY ./src/sse /src
+
 COPY ./index.js /src
 COPY ./package.json /src
 COPY ./package-lock.json /src

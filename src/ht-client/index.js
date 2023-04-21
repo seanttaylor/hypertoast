@@ -83,8 +83,10 @@ class HTReuben extends HyperToastClient {
       // Hacky way to determine when the asnyc processing is complete
       // We fire off the client-defined `onReady` method when all link relations are known providing 
       // a hook into the current context with `this`
+      
       if (idx === linkRelations.length - 1) {
         console.log('Caching complete...');
+        // Need to find a solution to ensure the `onReady` function is only called once
         this.#onReady(this);
       }
     });

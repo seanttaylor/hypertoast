@@ -26,6 +26,11 @@ const linkRelations = {
     title: 'Configure device settings',
     rel: '/hypertoast/relations/settings'
   },
+  'rt-updates': {
+    href: '/hypertoast/rt-updates/subscribe',
+    title: 'Subscribe to push notifications from the toaster',
+    rel: '/hypertoast/relations/rt-updates'
+  },
 };
 
 /**
@@ -78,6 +83,7 @@ class HTStatusStrategy extends HyperToastWriterStrategy {
         .addLink('off', linkRelations.off)
         .addLink('on', linkRelations.on)
         .addLink('settings', linkRelations.settings)
+        .addLink('rt-updates', linkRelations['rt-updates'])
         .addLink('home', linkRelations.home);
     }
 }
@@ -100,6 +106,7 @@ class HTOnStrategy extends HyperToastWriterStrategy {
       .addLink('off', linkRelations.off)
       .addLink('status', linkRelations.status)
       .addLink('settings', linkRelations.settings)
+      .addLink('rt-updates', linkRelations['rt-updates'])
       .addLink('home', linkRelations.home);
   }
 }
@@ -122,6 +129,7 @@ class HTOffStrategy extends HyperToastWriterStrategy {
       .addLink('off', linkRelations.off)
       .addLink('status', linkRelations.status)
       .addLink('settings', linkRelations.settings)
+      .addLink('rt-updates', linkRelations['rt-updates'])
       .addLink('home', linkRelations.home);
   }
 }
@@ -143,7 +151,8 @@ class HTHomeStrategy extends HyperToastWriterStrategy {
       .addLink('off', linkRelations.off)
       .addLink('on', linkRelations.on)
       .addLink('status', linkRelations.status)
-      .addLink('settings', linkRelations.settings)
+      .addLink('rt-updates', linkRelations['rt-updates'])
+      .addLink('settings', linkRelations.settings);
   }
 }
 
@@ -165,6 +174,8 @@ class HTSettingsStrategy extends HyperToastWriterStrategy {
       .addLink('on', linkRelations.on)
       .addLink('status', linkRelations.status)
       .addLink('settings', linkRelations.settings)
+      .addLink('rt-updates', linkRelations['rt-updates'])
+      .addLink('home', linkRelations.home);
   }
 }
   

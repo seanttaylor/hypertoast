@@ -19,6 +19,8 @@ import {
   HTHomeStrategy
 } from './src/ht-writer/index.js';
 
+import ServerSentEvent from './src/sse/index.js';
+
 const APP_NAME = 'hypertoast';
 const APP_VERSION = '0.0.1';
 const PORT = 3010;
@@ -50,29 +52,51 @@ let ht = new HyperToast('HyperToast', {
  */
 const HTSubscriberPlugin = {
   subscriptions: {},
+  /***
+   * @param {String}
+   * @param {Object}
+   */
+  publish(eventName, eventData) {
+    this.publishFn(new ServerSentEvent(eventName, eventData));
+  },
   setState(state) {
     console.log(state);
     this.state = state;
     if(this.subscriptions[state.name]) {
-      this.subscriptions[state.name].forEach((fn) => fn(state));
+      this.subscriptions[state.name].forEach((fn) => fn.call(this));
     };
   },
-  registerEvent(stateName, fn) {
+  /**
+   * 
+   * @param {*} stateName 
+   * @param {*} fn 
+   * @returns 
+   */
+  subscribe(stateName, fn) {
     if (this.subscriptions[stateName]) {
       this.subscriptions[stateName].push(fn);
       return;
     }
     this.subscriptions[stateName] = [];
     this.subscriptions[stateName].push(fn);
+  },
+  /**
+   * 
+   * @param {Function} publishFn 
+   */
+  addPublisher(publishFn) {
+    this.publishFn = publishFn;
   }
 };
 
 ht = Object.assign(ht, HTSubscriberPlugin);
-ht.registerEvent("off", onToasterOff);
+ht.subscribe('off', onToasterOff);
 
 /******** SUBSCRIPTIONS ********/ 
-function onToasterOff(state) {
-  console.log("Firing Toaster Off Event...");
+function onToasterOff(ht) {
+  console.log('Firing Toaster Off Event...');
+  console.log(this);
+  this.publish('toaster-off');
 }
 
 /******** ROUTES ********/
@@ -124,6 +148,25 @@ app.put('/hypertoast/v1/settings', validateRequest(settingsSchema), (req, res) =
   HyperToastWriter.setStrategy(new HTSettingsStrategy());
   res.json(HyperToastWriter.write(ht.getStatus()));
 });
+
+app.get('/hypertoast/rt-updates/subscribe', async (req, res) => {
+  res.status(200).set({
+    connection: 'keep-alive',
+    'cache-control': 'no-cache',
+    'content-type': 'text/event-stream',
+  });
+
+  // An initial OK response must be sent clients to establish a connection
+  res.write('data: CONNECTION_OK \n\n');
+  ht.addPublisher(([eventName, eventData]) => {
+    res.write(eventData);
+    res.write(eventName);
+  });
+  /*publishService.init(([eventName, eventData]) => {
+    res.write(eventData);
+    res.write(eventName);
+  });*/
+})
 
 app.use((req, res) => {
   res.status(404).send({ status: 404, error: 'Not Found' });

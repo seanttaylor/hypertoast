@@ -1,0 +1,5 @@
+{   
+    "title": "Realtime Updates",
+    "name": "rt-updates",
+    "description": "The 'rt-updates' link relation is used to allow clients to receive real-time updates from the toaster via Server-Sent Events. Toaster clients can receive updates about the toaster's current state, such as the current toasting progress or the availability of the toaster for use. When a client follows the 'rt-updates' link relation, it establishes a connection to the toaster's server using Server-Sent Events. This allows the server to push updates to the client in real-time, without requiring the client to constantly poll the server for updates."
+}

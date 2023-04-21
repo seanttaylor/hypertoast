@@ -50,6 +50,8 @@ class HyperToastClientWrapper {
       const onResponse = await cuizzineArt.getStatus();
       const statusResponse = await cuizzineArt.makeToast();
 
+      console.log(htClient.getCachedLinkRelations());
+
       //const onResponse = await htClient.request("on")();
       //const statusResponse = await htClient.request("status")();
       console.log({ onResponse, statusResponse });
