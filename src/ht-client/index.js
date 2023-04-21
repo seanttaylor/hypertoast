@@ -3,28 +3,35 @@ class HyperToastClient {
     #linkRelations = {}
 
     /**
-     * 
+     * Collects the top level _links object from an API response for use in making subsequent API requests
      */
     parseAdvertisedLinks() {
 
     }
 
     /**
-     * 
+     * Returns the stored link indentifiers collected from `parseAdvertisedLinks`
      */
     getLinkIdentifiers() {
 
     }
 
     /**
-     * 
+     * Returns the cached link relations collected from `cacheAdvertisedLinkRelations`
      */
     getLinkRelations() {
 
     }
+    
+    /**
+     * Stores the link relation information for specified links
+     */
+    cacheAdvertisedLinkRelations() {
+
+    }
 
     /**
-     * 
+     * The API client used to interact with the HyperToast API
      */
     request() {
 
@@ -52,7 +59,8 @@ class HTReuben extends HyperToastClient {
 
   }
   /**
-   * @param {Object}
+   * 
+   * @param {Object} links - the `_links` object on an application/vnd.hypertoast API response
    */
   parseAdvertisedLinks(links) {
     console.log("Parsing advertised links...");
@@ -61,11 +69,10 @@ class HTReuben extends HyperToastClient {
       this.#links[advertisedLink] = linkDescription;
       this.#linkRelations[linkDescription.rel] = {};
     });
-
   }
 
   /**
-   * 
+   * Stores the link relation information for specified links
    */
   async cacheAdvertisedLinkRelations() {
     console.log('Caching link relations...');
@@ -83,7 +90,7 @@ class HTReuben extends HyperToastClient {
       // Hacky way to determine when the asnyc processing is complete
       // We fire off the client-defined `onReady` method when all link relations are known providing 
       // a hook into the current context with `this`
-      
+
       if (idx === linkRelations.length - 1) {
         console.log('Caching complete...');
         // Need to find a solution to ensure the `onReady` function is only called once
@@ -107,6 +114,7 @@ class HTReuben extends HyperToastClient {
   }
   
   /**
+   * 
    * @param {String} rel
    * @return {Object}
    */

@@ -34,12 +34,13 @@ const linkRelations = {
 };
 
 /**
- * Prints a HyperToast instance
+ * 
  */
 class HyperToastWriter {
     static #context;
   
     /**
+     * Prints a HyperToast instance
      * @param {HyperToast} ht - an instance of HyperToast
      * @return {Object}
      */
@@ -48,6 +49,7 @@ class HyperToastWriter {
     }
   
     /**
+     * Specifies the current strategy for printing a HyperToast instance
      * @param {HyperToastWriterStrategy}
      */
     static setStrategy(htWriterStrategy) {
@@ -72,7 +74,7 @@ class HyperToastWriterStrategy {
  */
 class HTStatusStrategy extends HyperToastWriterStrategy {
     /**
-     * @param {HyperToast} - an instance of HyperToast
+     * @param {HyperToast}
      */
     write(ht) {
       return halson(ht)
@@ -94,7 +96,7 @@ class HTStatusStrategy extends HyperToastWriterStrategy {
 class HTOnStrategy extends HyperToastWriterStrategy {
 
   /**
-   * @param {HyperToast} - an instance of HyperToast
+   * @param {HyperToast}
    */
   write(ht) {
       return halson(ht)
@@ -117,7 +119,7 @@ class HTOnStrategy extends HyperToastWriterStrategy {
 class HTOffStrategy extends HyperToastWriterStrategy {
   
   /**
-   * @param {HyperToast} - an instance of HyperToast
+   * @param {HyperToast}
    */
   write(ht) {
     return halson(ht)
@@ -140,7 +142,7 @@ class HTOffStrategy extends HyperToastWriterStrategy {
 class HTHomeStrategy extends HyperToastWriterStrategy {
   
   /**
-   * @param {HyperToast} - an instance of HyperToast
+   * @param {HyperToast}
    */
   write(ht) {
     return halson(ht)
@@ -162,7 +164,7 @@ class HTHomeStrategy extends HyperToastWriterStrategy {
 class HTSettingsStrategy extends HyperToastWriterStrategy {
   
   /**
-   * @param {HyperToast} - an instance of HyperToast
+   * @param {HyperToast}
    */
   write(ht) {
     return halson(ht)

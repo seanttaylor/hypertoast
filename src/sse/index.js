@@ -10,7 +10,6 @@ export default class ServerSentEvent {
       @returns {Array}
       */
     constructor(eventName, eventData = {}) {
-      console.log({eventName, eventData})
       return [
         `event: ${eventName}\n\n`,
         `data: ${JSON.stringify({

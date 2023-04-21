@@ -1,4 +1,5 @@
 import figlet from 'figlet';
+import EventSource from 'eventsource';
 import { promisify } from 'util';
 import { HTReuben } from './src/ht-client/index.js';
 
@@ -39,31 +40,49 @@ class HyperToastClientWrapper {
   makeToast() {
     return this.#client.request("on")();
   }
+
+  /**
+   * Options the client into receiving real-time updates from the device
+   * @return {EventSource}
+   */
+  enablePushNotifications() {
+    console.log("enabling push notifications...");
+    
+    const links = this.#client.getLinkIdentifiers();
+    const sseEndpoint = `${HYPERTOAST_ROOT_URL}${links['rt-updates']['href']}`;
+    const sseHook = new EventSource(sseEndpoint);
+    
+    return sseHook;
+  }
 }
 
-(async function() {
-  console.log(banner);
+console.log(banner);
 
-  try {
-    const htReuben = new HTReuben(HYPERTOAST_ROOT_URL, async(htClient) => {
-      const cuizzineArt = new HyperToastClientWrapper(htClient);
-      const onResponse = await cuizzineArt.getStatus();
-      const statusResponse = await cuizzineArt.makeToast();
+try {
+  const htReuben = new HTReuben(HYPERTOAST_ROOT_URL, async function onReady(htClient) {
+    // 2). Executes when the link and relations processing is *completed* 
+    const cuizzineArt = new HyperToastClientWrapper(htClient);
+    const makeToastResponse = await cuizzineArt.makeToast();
+    const notificationHook = cuizzineArt.enablePushNotifications();
 
-      console.log(htClient.getCachedLinkRelations());
-
-      //const onResponse = await htClient.request("on")();
-      //const statusResponse = await htClient.request("status")();
-      console.log({ onResponse, statusResponse });
+    notificationHook.addEventListener('toaster-off', (event)=> {
+      // 3). The client listens for the 'toaster-off' event from the HyperToast service to
+      // learn when the toast is ready via Server-Sent Event
+      
+      console.log('received device message...');
+      console.log(JSON.parse(event.data));
     });
-
-    const initRequest = await fetch(HYPERTOAST_ENTRYPOINT_URL);  
-    const response = await initRequest.json();
-  
-    htReuben.parseAdvertisedLinks(response._links);
-    await htReuben.cacheAdvertisedLinkRelations();
     
-  } catch(e) {
-    console.error(e);
-  }
-}());
+    console.log({ makeToastResponse });
+  });
+  
+  // 1). Launches processing of links and relations *before* the client application boots above
+  const initRequest = await fetch(HYPERTOAST_ENTRYPOINT_URL);  
+  const response = await initRequest.json();
+
+  htReuben.parseAdvertisedLinks(response._links);
+  await htReuben.cacheAdvertisedLinkRelations();
+  
+} catch(e) {
+  console.error(e);
+}

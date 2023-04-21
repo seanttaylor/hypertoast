@@ -53,24 +53,30 @@ let ht = new HyperToast('HyperToast', {
 const HTSubscriberPlugin = {
   subscriptions: {},
   /***
+   * Publishes a message via a client-defined method `publishFn`; this implementation hardcodes Server-Sent Events 
+   * but the publish capability could be implemented in any format
    * @param {String}
    * @param {Object}
    */
   publish(eventName, eventData) {
     this.publishFn(new ServerSentEvent(eventName, eventData));
   },
+  /**
+   * Augmented `setState` method executes any subscribers listening for the current state
+   * @param {ToasterState} state 
+   */
   setState(state) {
     console.log(state);
     this.state = state;
     if(this.subscriptions[state.name]) {
-      this.subscriptions[state.name].forEach((fn) => fn.call(this));
+      this.subscriptions[state.name].forEach((fn) => fn.call(this, state));
     };
   },
   /**
-   * 
-   * @param {*} stateName 
-   * @param {*} fn 
-   * @returns 
+   * Subscribes to a specified state change with a client defined handler function
+   * @param {String} stateName - the name of a valid state to alert for changes to
+   * @param {Function} fn - handler function to execute when the specified state change occurs
+   *  
    */
   subscribe(stateName, fn) {
     if (this.subscriptions[stateName]) {
@@ -81,8 +87,8 @@ const HTSubscriberPlugin = {
     this.subscriptions[stateName].push(fn);
   },
   /**
-   * 
-   * @param {Function} publishFn 
+   * Registers a client-defined publish capability
+   * @param {Function} publishFn - a function to execute when a message is ready for publishing
    */
   addPublisher(publishFn) {
     this.publishFn = publishFn;
@@ -93,10 +99,13 @@ ht = Object.assign(ht, HTSubscriberPlugin);
 ht.subscribe('off', onToasterOff);
 
 /******** SUBSCRIPTIONS ********/ 
-function onToasterOff(ht) {
-  console.log('Firing Toaster Off Event...');
-  console.log(this);
-  this.publish('toaster-off');
+/**
+ * A handler function to execute when the 'toaster-off' state is triggered
+ * @param {ToasterState} state - an object describing the current toater state
+ */
+function onToasterOff(state) {
+  console.log('publishing (toaster-off) event...');
+  this.publish('toaster-off', state);
 }
 
 /******** ROUTES ********/
@@ -109,8 +118,9 @@ app.get('/hypertoast/schemas/:rel', (req, res) => {
 });
 
 app.get('/hypertoast', (req, res) => {
-  res.set('content-type', 'application/json');
-  
+  //res.set('content-type', 'application/json');
+  res.set('content-type', 'application/vnd.hypertoast');
+
   HyperToastWriter.setStrategy(new HTHomeStrategy());
   res.json(HyperToastWriter.write(ht.getStatus()));
 });
@@ -124,7 +134,9 @@ app.get('/hypertoast/v1/status', (req, res) => {
 });
 
 app.put('/hypertoast/v1/state/on', (req, res) => {
-  res.set('content-type', 'application/json');
+  //res.set('content-type', 'application/json');
+  res.set('content-type', 'application/vnd.hypertoast');
+
   ht = ht.on();
 
   HyperToastWriter.setStrategy(new HTOnStrategy());
@@ -132,7 +144,9 @@ app.put('/hypertoast/v1/state/on', (req, res) => {
 });
 
 app.put('/hypertoast/v1/state/off', (req, res) => {
-  res.set('content-type', 'application/json');
+  //res.set('content-type', 'application/json');
+  res.set('content-type', 'application/vnd.hypertoast');
+
   ht = ht.off();
 
   HyperToastWriter.setStrategy(new HTOffStrategy());
@@ -156,17 +170,13 @@ app.get('/hypertoast/rt-updates/subscribe', async (req, res) => {
     'content-type': 'text/event-stream',
   });
 
-  // An initial OK response must be sent clients to establish a connection
+  // An initial OK response MUST be sent clients to establish a connection
   res.write('data: CONNECTION_OK \n\n');
   ht.addPublisher(([eventName, eventData]) => {
     res.write(eventData);
     res.write(eventName);
   });
-  /*publishService.init(([eventName, eventData]) => {
-    res.write(eventData);
-    res.write(eventName);
-  });*/
-})
+});
 
 app.use((req, res) => {
   res.status(404).send({ status: 404, error: 'Not Found' });
