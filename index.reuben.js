@@ -1,5 +1,6 @@
 import figlet from 'figlet';
 import EventSource from 'eventsource';
+import TOAST_PREFERENCES from './src/ht-client/preferences.js';
 import { promisify } from 'util';
 import { HTReuben } from './src/ht-client/index.js';
 
@@ -30,15 +31,15 @@ class HyperToastClientWrapper {
    * @return {Object}
    */
   async getStatus() {
-    return this.#client.request("status")();
+    return this.#client.request('status')();
   }
 
   /**
    * Sends a request to the device to begin making toast
    * @return {Object}
    */
-  makeToast() {
-    return this.#client.request("on")();
+  async makeToast() {
+    return this.#client.request('on')();
   }
 
   /**
@@ -46,34 +47,44 @@ class HyperToastClientWrapper {
    * @return {EventSource}
    */
   enablePushNotifications() {
-    console.log("enabling push notifications...");
-    
+    // console.log('enabling push notifications...');
     const links = this.#client.getLinkIdentifiers();
     const sseEndpoint = `${HYPERTOAST_ROOT_URL}${links['rt-updates']['href']}`;
     const sseHook = new EventSource(sseEndpoint);
     
     return sseHook;
   }
+
+  /**
+   * Establishes the cooking preferences for a specified toast request
+   * @param {Object} preferences - a configuration object containing preferences for the toaster
+   * @return {Object}
+   */
+  async setCookPreferences({ version, ...preferences}) {
+    return this.#client.request('settings')(preferences, version);
+  }
 }
 
 console.log(banner);
 
+/******** MAIN ********/
 try {
   const htReuben = new HTReuben(HYPERTOAST_ROOT_URL, async function onReady(htClient) {
     // 2). Executes when the link and relations processing is *completed* 
     const cuizzineArt = new HyperToastClientWrapper(htClient);
-    const makeToastResponse = await cuizzineArt.makeToast();
+    const currentSettings = await cuizzineArt.setCookPreferences(TOAST_PREFERENCES.latest);
+    await cuizzineArt.makeToast();
+
     const notificationHook = cuizzineArt.enablePushNotifications();
+    // console.log({ currentSettings });
 
     notificationHook.addEventListener('toaster-off', (event)=> {
       // 3). The client listens for the 'toaster-off' event from the HyperToast service to
       // learn when the toast is ready via Server-Sent Event
       
-      console.log('received device message...');
+      console.log('Received HyperToast message...');
       console.log(JSON.parse(event.data));
-    });
-    
-    console.log({ makeToastResponse });
+    });    
   });
   
   // 1). Launches processing of links and relations *before* the client application boots above

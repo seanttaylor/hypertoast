@@ -58,7 +58,7 @@ const HTSubscriberPlugin = {
    * @param {Object}
    */
   publish(eventName, eventData) {
-    this.publishFn(eventName, eventData);
+    this.publishFn?.(eventName, eventData);
   },
   /**
    * Augmented `setState` method executes any subscribers listening for the current state
@@ -103,7 +103,7 @@ ht.subscribe('off', onToasterOff);
  * @param {ToasterState} state - an object describing the current toater state
  */
 function onToasterOff(state) {
-  console.log('Publishing (toaster-off) event...');
+  // console.log('Publishing (toaster-off) event...');
   this.publish('toaster-off', state);
 }
 
@@ -187,8 +187,8 @@ app.get('/hypertoast/rt-updates/subscribe', async (req, res) => {
 
       res.write(sseEventData);
       res.write(sseEventName);
-    }
-    
+      console.log('HyperToast client notification sent...');
+    }  
   });
 });
 

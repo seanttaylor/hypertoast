@@ -63,7 +63,7 @@ class HTReuben extends HyperToastClient {
    * @param {Object} links - the `_links` object on an application/vnd.hypertoast API response
    */
   parseAdvertisedLinks(links) {
-    console.log("Parsing advertised links...");
+    console.log('Parsing advertised links...');
 
     Object.entries(links).forEach(([advertisedLink, linkDescription])=> {
       this.#links[advertisedLink] = linkDescription;
@@ -135,12 +135,14 @@ class HTReuben extends HyperToastClient {
 
     /**
      * @param {Object} body - request body 
+     * @param {String} schemaVersion - schema versioning to apply to request
      */
-    return async function(body={}) {
+    return async function(body={}, schemaVersion='') { 
       const options = {
         method,
         headers: {
-          "Content-Type": "application/json",
+          'accept': `application/vnd.hypertoast;schema=${schemaVersion}`,
+          'content-type': 'application/json',
         }
       };
 
@@ -152,7 +154,6 @@ class HTReuben extends HyperToastClient {
       const response = await fetch(URL, options);
       return response.json();      
     }
-       
   }
 }
 

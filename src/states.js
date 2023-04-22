@@ -79,7 +79,7 @@ class ToasterState {
    * @returns {Number}
    */
    getCookTime(settings) {
-    console.log(settings.version)
+    // console.log(`Calculating cook time... (settings schema version ${settings.version}`));
     const cookTime = this.#versionMap[settings.version](settings);
     return cookTime;
   }
@@ -108,9 +108,7 @@ class ToasterOnState extends ToasterState {
    */
   constructor(ht) {
     super();
-
-    //const cookSettingId = ht.settings.cookConfig.level[0];
-    //const cookTime = ht.settings.cookConfig.timer[cookSettingId];
+    
     const cookTime = this.getCookTime(ht.settings);
     
     this.statusMessage = 'Toaster is turning on...';

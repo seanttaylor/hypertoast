@@ -35,7 +35,7 @@ class HyperToast {
    * @param {ToasterState} state
    */
   setState(state) { 
-    //console.log(state);
+    // console.log(state);
     console.log(state.statusMessage);
     this.state = state;
   }

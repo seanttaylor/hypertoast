@@ -7,7 +7,7 @@ export default {
     "required": [
         "mode",
         "cookConfig",
-        "notification"
+        "notifications"
     ],
     "properties": {
         "mode": {
@@ -75,10 +75,10 @@ export default {
                 }
             }]
         },
-        "notification": {
+        "notifications": {
             "type": "object",
             "default": {},
-            "title": "The notification Schema",
+            "title": "The notifications Schema",
             "required": [
                 "shouldNotify",
                 "type"

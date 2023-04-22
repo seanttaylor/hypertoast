@@ -13,7 +13,7 @@ export default function validateRequest(schemaMap) {
     const [, schemaURL] = schema.split('=');
 
     res.locals.settingsVersion = schemaURL;
-    console.log(`Validating request with schema (${schemaURL})`);
+    // console.log(`Validating request with schema (${schemaURL})`);
     
     const requestValidation = ajv.compile(schemaMap[schemaURL]);
 
