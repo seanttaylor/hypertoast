@@ -101,20 +101,64 @@ export default {
                         "default": "",
                         "title": "A Schema",
                         "examples": [
-                            "sse"
+                            "http"
                         ]
                     },
                     "examples": [
                         [
-                            "sse"]
+                            "http"]
+                    ]
+                },
+                "callback": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The callback Schema",
+                    "required": [
+                        "href",
+                        "rel"
+                    ],
+                    "properties": {
+                        "href": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The href Schema",
+                            "examples": [
+                                "http://localhost:3000/api/v1/notify"
+                            ]
+                        },
+                        "rel": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The rel Schema",
+                            "examples": [
+                                "http://localhost:3000/relations/notify"
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "href": "http://localhost:3000/api/v1/notify",
+                        "rel": "http://localhost:3000/relations/notify"
+                    }]
+                },
+                "number": {
+                    "type": "string",
+                    "default": "",
+                    "title": "The number Schema",
+                    "examples": [
+                        "2128675309"
                     ]
                 }
             },
             "examples": [{
                 "shouldNotify": true,
                 "type": [
-                    "sse"
-                ]
+                    "http"
+                ],
+                "callback": {
+                    "href": "http://localhost:3000/api/v1/notify",
+                    "rel": "http://localhost:3000/relations/notify"
+                },
+                "number": "2128675309"
             }]
         }
     },
@@ -130,8 +174,13 @@ export default {
         "notification": {
             "shouldNotify": true,
             "type": [
-                "sse"
-            ]
+                "http"
+            ],
+            "callback": {
+                "href": "http://localhost:3000/api/v1/notify",
+                "rel": "http://localhost:3000/relations/notify"
+            },
+            "number": "2128675309"
         }
     }]
 }

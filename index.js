@@ -22,7 +22,7 @@ import {
 import ServerSentEvent from './src/sse/index.js';
 
 const APP_NAME = 'hypertoast';
-const APP_VERSION = '0.0.1';
+const APP_VERSION = '0.0.2';
 const PORT = 3010;
 const settingsSchema = {
   'http://localhost:3010/hypertoast/schemas/settings-1': settingsSchemav1,
@@ -103,7 +103,7 @@ ht.subscribe('off', onToasterOff);
  * @param {ToasterState} state - an object describing the current toater state
  */
 function onToasterOff(state) {
-  console.log('publishing (toaster-off) event...');
+  console.log('Publishing (toaster-off) event...');
   this.publish('toaster-off', state);
 }
 
@@ -156,7 +156,10 @@ app.put('/hypertoast/v1/settings', validateRequest(settingsSchema), (req, res) =
   //res.set('content-type', 'application/json');
   res.set('content-type', 'application/vnd.hypertoast');
    
-  ht.settings = req.body;
+  ht.settings = Object.assign(ht.settings, { 
+    version: res.locals.settingsVersion,
+    ...req.body 
+  });
 
   HyperToastWriter.setStrategy(new HTSettingsStrategy());
   res.json(HyperToastWriter.write(ht.getStatus()));
@@ -179,7 +182,7 @@ app.get('/hypertoast/rt-updates/subscribe', async (req, res) => {
     // the hypertoast instance must opt-in to notifications *and* specify 
     // notifications of type 'sse' to use this publisher 
 
-    if ((this.settings.notifications?.shouldNotify) && (this.settings.notifications.shouldNotify.type[0] === 'sse')) {
+    if ((this.settings.notifications?.shouldNotify) && (this.settings.notifications.type[0] === 'sse')) {
       const [sseEventName, sseEventData] = new ServerSentEvent(eventName, eventData);
 
       res.write(sseEventData);

@@ -50,15 +50,38 @@ class ToasterState {
   cookStartTimeMillis;
   cookTimeRemainingMillis;
   cookInProgress = false;
+  // `versionMap` allows to provide version aware capabilities to clients
+  // Below we are able to support multiple versions of the device settings schema
+  #versionMap = {
+    'http://localhost:3010/hypertoast/schemas/settings-1': (settings) => {
+      const cookSettingId = settings.cookConfig.level[0];
+      return settings.cookConfig.timer[cookSettingId];
+    }, 
+    'http://localhost:3010/hypertoast/schemas/settings': (settings) => {
+      const cookSettingId = settings.cookConfig.level;
+      return settings.cookConfig.timer[cookSettingId];
+    }
+  };
 
   /**
-   * Calculates the cooking time left
+   * Calculates the cooking time left in milliseconds
    * @param {String} timestamp - an ISO Date String (e.g.
    * new Date().toISOString())
    * @returns {Number}
    */
   getCookTimeRemaining(timestamp) {
     return this.cookEndTimeMillis - new Date(timestamp).getTime();
+  }
+
+   /**
+   * Returns the total duration of the cook cycle in milliseconds based on client-defined setings
+   * @param {Object} settings
+   * @returns {Number}
+   */
+   getCookTime(settings) {
+    console.log(settings.version)
+    const cookTime = this.#versionMap[settings.version](settings);
+    return cookTime;
   }
 
   /**
@@ -86,9 +109,10 @@ class ToasterOnState extends ToasterState {
   constructor(ht) {
     super();
 
-    const cookSettingId = ht.settings.cookConfig.level[0];
-    const cookTime = ht.settings.cookConfig.timer[cookSettingId];
-
+    //const cookSettingId = ht.settings.cookConfig.level[0];
+    //const cookTime = ht.settings.cookConfig.timer[cookSettingId];
+    const cookTime = this.getCookTime(ht.settings);
+    
     this.statusMessage = 'Toaster is turning on...';
     this.name = 'on';
     this.timestamp = new Date().toISOString();

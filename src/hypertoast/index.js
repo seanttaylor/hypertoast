@@ -1,14 +1,17 @@
 import { ToasterOffState } from '../states.js';
 
+const DEFAULT_SETTINGS_VERSION = 'http://localhost:3010/hypertoast/schemas/settings-1';
+
 class HyperToast {
   state;
   settings;
   deviceName;
-  applicationVersion = "0.0.1";
+  applicationVersion = '0.0.2';
 
   constructor(name, settings = {}) {
     this.deviceName = name;
     this.settings = settings;
+    this.settings.version = DEFAULT_SETTINGS_VERSION;
     this.state = new ToasterOffState(this);
   }
   /**
