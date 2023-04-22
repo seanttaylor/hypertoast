@@ -11,6 +11,8 @@ export default function validateRequest(schemaMap) {
   return function validator(req, res, next) {
     const [, schema] = req.headers['accept'].split(';');
     const [, schemaURL] = schema.split('=');
+
+    console.log(schemaURL);
     const requestValidation = ajv.compile(schemaMap[schemaURL]);
 
     if (requestValidation(req.body)) {

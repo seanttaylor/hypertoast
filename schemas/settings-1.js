@@ -84,6 +84,7 @@ export default {
             }]
         }
     },
+    "additionalProperties": false,
     "examples": [{
         "mode": [
             "bagel"

@@ -25,8 +25,8 @@ const APP_NAME = 'hypertoast';
 const APP_VERSION = '0.0.1';
 const PORT = 3010;
 const settingsSchema = {
-  'https://localhost:3010/hypertoast/schemas/settings-1': settingsSchemav1,
-  'https://localhost:3010/hypertoast/schemas/settings': settingsSchemav2
+  'http://localhost:3010/hypertoast/schemas/settings-1': settingsSchemav1,
+  'http://localhost:3010/hypertoast/schemas/settings': settingsSchemav2
 };
 
 const figletize = promisify(figlet);
@@ -53,13 +53,12 @@ let ht = new HyperToast('HyperToast', {
 const HTSubscriberPlugin = {
   subscriptions: {},
   /***
-   * Publishes a message via a client-defined method `publishFn`; this implementation hardcodes Server-Sent Events 
-   * but the publish capability could be implemented in any format
+   * Publishes a message via a client-defined method `publishFn`
    * @param {String}
    * @param {Object}
    */
   publish(eventName, eventData) {
-    this.publishFn(new ServerSentEvent(eventName, eventData));
+    this.publishFn(eventName, eventData);
   },
   /**
    * Augmented `setState` method executes any subscribers listening for the current state
@@ -172,9 +171,21 @@ app.get('/hypertoast/rt-updates/subscribe', async (req, res) => {
 
   // An initial OK response MUST be sent clients to establish a connection
   res.write('data: CONNECTION_OK \n\n');
-  ht.addPublisher(([eventName, eventData]) => {
-    res.write(eventData);
-    res.write(eventName);
+
+  // A classic function declaration is used in the call to `ht.addPublisher` because arrow functions
+  // do not have their own binding to `this`
+  // See (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions) for more info
+  ht.addPublisher(function(eventName, eventData) {
+    // the hypertoast instance must opt-in to notifications *and* specify 
+    // notifications of type 'sse' to use this publisher 
+
+    if ((this.settings.notifications?.shouldNotify) && (this.settings.notifications.shouldNotify.type[0] === 'sse')) {
+      const [sseEventName, sseEventData] = new ServerSentEvent(eventName, eventData);
+
+      res.write(sseEventData);
+      res.write(sseEventName);
+    }
+    
   });
 });
 

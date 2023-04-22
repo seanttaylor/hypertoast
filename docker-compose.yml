@@ -9,6 +9,8 @@ services:
     environment:
       APP_NAME: hypertoast
       APP_VERSION: "0.0.1"
+    expose:
+      - 3010
     volumes:
       - ./:/src
     networks:
