@@ -75,18 +75,27 @@ class HyperToastWriterStrategy {
 class HTStatusStrategy extends HyperToastWriterStrategy {
     /**
      * @param {HyperToast}
+     * @return {Object}
      */
     write(ht) {
-      return halson(ht)
+      const response = halson(ht)
         .addLink('self', {
           href: '/hypertoast/v1/status',
           rel: '/hypertoast/relations/self'
         })
-        .addLink('off', linkRelations.off)
-        .addLink('on', linkRelations.on)
         .addLink('settings', linkRelations.settings)
         .addLink('rt-updates', linkRelations['rt-updates'])
         .addLink('home', linkRelations.home);
+
+        if (['cooking', 'preheating', 'on'].includes(ht.name)) {
+          response.addLink('off', linkRelations.off); 
+        }
+
+        if (ht.name === 'off') {
+          response.addLink('on', linkRelations.on);
+        }
+
+      return response;
     }
 }
   

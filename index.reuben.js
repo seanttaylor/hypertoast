@@ -73,10 +73,17 @@ try {
     // 2). Executes when the link and relations processing is *completed* 
     const cuizzineArt = new HyperToastClientWrapper(htClient);
     const currentSettings = await cuizzineArt.setCookPreferences(TOAST_PREFERENCES.latest);
+    const status = await cuizzineArt.getStatus();
+
     await cuizzineArt.makeToast();
 
     const notificationHook = cuizzineArt.enablePushNotifications();
-    // console.log({ currentSettings });
+
+    /******** ********/
+    typeof status.applicationVersion === 'string' ? console.log('HyperToast client bootstrapped OK') : console.error('HyperToast client bootstrap error')
+    /******** ********/
+
+    console.log(status);
 
     notificationHook.addEventListener('toaster-off', (event)=> {
       // 3). The client listens for the 'toaster-off' event from the HyperToast service to
