@@ -2,5 +2,11 @@
     "title": "The On State",
     "name": "on",
     "description": "The 'on' link relation is used to indicate the activation of the smart toaster. When a client activates the toaster, it enters an 'on' state, indicating that it is ready to toast bread or other items. This link relation is used to provide web clients with information about the current state of the toaster and enable them to control its functionality as needed.",
-    "method": "PUT"
+    "method": "PUT",
+    "headers": {
+        "accept": [
+            "application.vnd/hypertoast"
+        ],
+        "content-type": "application/json"
+    }
 }

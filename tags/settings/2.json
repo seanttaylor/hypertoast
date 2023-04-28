@@ -1,0 +1,7 @@
+{
+    "mode": "/mode",
+    "level": "/cookConfig/level",
+    "timer": "/cookConfig/timer",
+    "notificationType": "/notifications/type/0",
+    "shouldNotify": "/notifications/shouldNotify"
+}

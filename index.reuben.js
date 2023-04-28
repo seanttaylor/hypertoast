@@ -72,13 +72,18 @@ try {
   const htReuben = new HTReuben(HYPERTOAST_ROOT_URL, async function onReady(htClient) {
     // 2). Executes when the link and relations processing is *completed* 
     const cuizzineArt = new HyperToastClientWrapper(htClient);
-    const currentSettings = await cuizzineArt.setCookPreferences(TOAST_PREFERENCES.latest);
+    await cuizzineArt.setCookPreferences(TOAST_PREFERENCES.latest);
     const status = await cuizzineArt.getStatus();
-
     await cuizzineArt.makeToast();
-
+    
     const notificationHook = cuizzineArt.enablePushNotifications();
+    const { settings } = htClient.getLinkIdentifiers();
+    const settingsTag = await htClient.getServiceObjectTags(settings.rel);
 
+    ///cuizineArt.displayDeviceMarquee();
+
+    console.log({ settingsTag });
+    
     /******** ********/
     typeof status.applicationVersion === 'string' ? console.log('HyperToast client bootstrapped OK') : console.error('HyperToast client bootstrap error')
     /******** ********/

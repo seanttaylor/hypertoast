@@ -19,7 +19,7 @@ class HyperToastClient {
     /**
      * Returns the cached link relations collected from `cacheAdvertisedLinkRelations`
      */
-    getLinkRelations() {
+    getCachedLinkRelations() {
 
     }
     
@@ -44,6 +44,7 @@ class HyperToastClient {
 class HTReuben extends HyperToastClient {
   #links = {};
   #linkRelations = {};
+  #objectTags = {};
   #onReady;
   #rootURL; 
 
@@ -112,6 +113,26 @@ class HTReuben extends HyperToastClient {
   getCachedLinkRelations() {
     return this.#linkRelations;
   }
+
+  /**
+   * @param {String} rel
+   */
+  async getServiceObjectTags(rel) {
+    const linkRelation = this.#linkRelations[rel];
+    
+    if (this.#objectTags[linkRelation]) {
+      return this.#objectTags[linkRelation];
+    }
+
+    console.log(`${this.#rootURL}${linkRelation.tags.href}`);
+
+    const response = await fetch(`${this.#rootURL}${linkRelation.tags.href}`);
+    const objectTag = await response.json();
+
+    this.#objectTags[linkRelation] = objectTag;
+
+    return objectTag;
+  } 
   
   /**
    * 
@@ -122,7 +143,10 @@ class HTReuben extends HyperToastClient {
     const URL = `${this.#rootURL}${this.#links[rel].href}`;
     const relId = this.#links[rel].rel;
     const method = this.#linkRelations[relId].method || "GET";
+
     const ETag = this.#linkRelations[relId].ETag;
+    const acceptHeaders = this.#linkRelations[relId]?.headers?.accept.join(';');
+    const contentTypeHeader = this.#linkRelations[relId]?.headers['content-type'] || 'application/json';
 
     // after a request we should always parse new advertised links
     // this.parseAdvertisedLinks(response);
@@ -135,14 +159,15 @@ class HTReuben extends HyperToastClient {
 
     /**
      * @param {Object} body - request body 
-     * @param {String} schemaVersion - schema versioning to apply to request
      */
-    return async function(body={}, schemaVersion='') { 
+    return async function(body={}) { 
+      
       const options = {
         method,
         headers: {
-          'accept': `application/vnd.hypertoast;schema=${schemaVersion}`,
-          'content-type': 'application/json',
+          //'accept': `application/vnd.hypertoast;schema=${schemaVersion}`,
+          'accept': acceptHeaders,
+          'content-type': contentTypeHeader,
         }
       };
 

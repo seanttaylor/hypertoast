@@ -1,13 +1,13 @@
-export default {
+{
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "http://example.com/example.json",
+    "$id": "http://com.hypertoast/schemas/link-relation.json",
     "type": "object",
     "default": {},
     "title": "The Link Relation Schema",
     "required": [
         "title",
         "name",
-        "description",
+        "description"
     ],
     "properties": {
         "title": {
@@ -43,26 +43,63 @@ export default {
             ]
         },
         "schema": {
-            "type": "string",
-            "default": "",
+            "type": "object",
+            "default": {},
             "title": "The schema Schema",
-            "examples": [
-                "/schemas/v1/settings"
-            ]
+            "required": [
+                "href"
+            ],
+            "properties": {
+                "href": {
+                    "type": "string",
+                    "default": "",
+                    "title": "The href Schema",
+                    "examples": [
+                        "/schemas/v1/settings"
+                    ]
+                }
+            },
+            "examples": [{
+                "href": "/schemas/v1/settings"
+            }]
         },
         "tags": {
-            "type": "string",
-            "default": "",
+            "type": "object",
+            "default": {},
             "title": "The tags Schema",
-            "examples": [
-                "/tags/settings/v3"
-            ]
+            "required": [
+                "href"
+            ],
+            "properties": {
+                "href": {
+                    "type": "string",
+                    "default": "",
+                    "title": "The href Schema",
+                    "examples": [
+                        "/tags/settings/{version}"
+                    ]
+                },
+                "templated": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "The templated Schema",
+                    "examples": [
+                        true
+                    ]
+                }
+            },
+            "examples": [{
+                "href": "/tags/settings/{version}",
+                "templated": true
+            }]
         },
         "headers": {
             "type": "object",
             "default": {},
             "title": "The headers Schema",
-            "required": [],
+            "required": [
+                
+            ],
             "properties": {
                 "accept": {
                     "type": "array",
@@ -96,8 +133,13 @@ export default {
         "name": "settings",
         "description": "The 'settings' link relation is used to provide web clients with the ability to adjust the settings of the smart toaster and to customize the functionality of the toaster to better suit their needs and preferences. Clients may adjust various settings, such as the toasting time, the level of toasting, and the type of bread that is being toasted.",
         "method": "PUT",
-        "schema": "/schemas/v1/settings",
-        "tags": "/tags/settings/v3",
+        "schema": {
+            "href": "/schemas/v1/settings"
+        },
+        "tags": {
+            "href": "/tags/settings/{version}",
+            "templated": true
+        },
         "headers": {
             "accept": [
                 "application/vnd.hypertoast",

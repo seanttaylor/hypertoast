@@ -7,8 +7,8 @@ import path from 'path';
 import { promisify } from 'util';
 import { HyperToast } from './src/hypertoast/index.js';
 import validateRequest from './src/middleware/validate.js';
-import settingsSchemav1 from './schemas/settings-1.js';
-import settingsSchemav2 from './schemas/settings.js';
+import settingsSchemav1 from './schemas/settings-1.json' assert { type: 'json' };
+import settingsSchemav2 from './schemas/settings.json' assert { type: 'json' };
 
 import {
   HyperToastWriter,
@@ -114,6 +114,10 @@ app.get('/hypertoast/relations/:rel', (req, res) => {
 
 app.get('/hypertoast/schemas/:rel', (req, res) => {
   res.sendFile(path.resolve(`schemas/${req.params.rel}.json`));
+});
+
+app.get('/hypertoast/tags/:rel/v/:version', (req, res) => {
+  res.sendFile(path.resolve(`tags/${req.params.rel}/${req.params.version}.json`));
 });
 
 app.get('/hypertoast', (req, res) => {
