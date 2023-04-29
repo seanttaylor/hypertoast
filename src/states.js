@@ -52,12 +52,13 @@ class ToasterState {
   cookInProgress = false;
   // `versionMap` allows to provide version aware capabilities to clients
   // Below we are able to support multiple versions of the device settings schema
+  // This is what we want to get away from (i.e. custom-mapping code) in favor of a standard like JSON Pointer
   #versionMap = {
-    'http://localhost:3010/hypertoast/schemas/settings-1': (settings) => {
+    '0.0.1': (settings) => {
       const cookSettingId = settings.cookConfig.level[0];
       return settings.cookConfig.timer[cookSettingId];
     }, 
-    'http://localhost:3010/hypertoast/schemas/settings': (settings) => {
+    '0.0.2': (settings) => {
       const cookSettingId = settings.cookConfig.level;
       return settings.cookConfig.timer[cookSettingId];
     }
@@ -79,7 +80,7 @@ class ToasterState {
    * @returns {Number}
    */
    getCookTime(settings) {
-    // console.log(`Calculating cook time... (settings schema version ${settings.version}`));
+    //console.log(`Calculating cook time... (settings schema version ${settings.version}`);
     const cookTime = this.#versionMap[settings.version](settings);
     return cookTime;
   }

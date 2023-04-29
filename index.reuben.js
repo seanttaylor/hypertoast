@@ -8,7 +8,7 @@ import DOMAINS from './src/ht-client/domains.js';
 import TOAST_PREFERENCES from './src/ht-client/preferences.js';
 
 const APP_NAME = 'reuben';
-const APP_VERSION = '0.0.1';
+const APP_VERSION = process.env.APP_VERSION || '0.0.1';
 const HYPERTOAST_ENTRYPOINT_URL = process.env.HYPERTOAST_ENTRYPOINT_URL;
 const HYPERTOAST_ROOT_URL = process.env.HYPERTOAST_ROOT_URL || 'http://hypertoast:3010';
 
@@ -69,10 +69,11 @@ class HyperToastClientWrapper {
 
   /**
    * Establishes the cooking preferences for a specified toast request
+   * @param {String} version - application version
    * @param {Object} preferences - a configuration object containing preferences for the toaster
    * @return {Object}
    */
-  async setCookPreferences({ version, ...preferences}) {
+  async setCookPreferences({ version, preferences }) {
     return this.#client.request('settings')(preferences, version);
   }
 }
@@ -105,7 +106,10 @@ try {
   const htReuben = new HTReuben(HYPERTOAST_ROOT_URL, async function onReady(htClient) {
     // 2). Executes when the link and relations processing is *completed* 
     const cuizzineArt = new HyperToastClientWrapper(htClient);
-    await cuizzineArt.setCookPreferences(TOAST_PREFERENCES.latest);
+    await cuizzineArt.setCookPreferences({
+      version: APP_VERSION,
+      preferences: TOAST_PREFERENCES[APP_VERSION]
+    });
     const status = await cuizzineArt.getStatus();
     await cuizzineArt.makeToast();
     

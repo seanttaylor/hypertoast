@@ -1,6 +1,6 @@
 import { ToasterOffState } from '../states.js';
 
-const DEFAULT_SETTINGS_VERSION = 'http://localhost:3010/hypertoast/schemas/settings-1';
+const DEFAULT_SETTINGS_VERSION = '0.0.1';
 
 class HyperToast {
   state;

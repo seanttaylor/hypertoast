@@ -1,3 +1,5 @@
+import uriTemplate from 'uri-template';
+
 class HyperToastClient {
     #links = {};
     #linkRelations = {}
@@ -124,9 +126,9 @@ class HTReuben extends HyperToastClient {
       return this.#objectTags[linkRelation];
     }
 
-    console.log(`${this.#rootURL}${linkRelation.tags.href}`);
-
-    const response = await fetch(`${this.#rootURL}${linkRelation.tags.href}`);
+    const template = uriTemplate.parse(`${this.#rootURL}${linkRelation.tags.href}`);
+    const URL = template.expand({ version: process.env.APP_VERSION });
+    const response = await fetch(URL);
     const objectTag = await response.json();
 
     this.#objectTags[linkRelation] = objectTag;
@@ -165,8 +167,7 @@ class HTReuben extends HyperToastClient {
       const options = {
         method,
         headers: {
-          //'accept': `application/vnd.hypertoast;schema=${schemaVersion}`,
-          'accept': acceptHeaders,
+          accept: `${acceptHeaders};v=${process.env.APP_VERSION}`,
           'content-type': contentTypeHeader,
         }
       };

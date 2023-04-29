@@ -14,13 +14,14 @@ export default function validateRequest(schemaMap) {
 
     res.locals.settingsVersion = schemaURL;
 
-    // console.log(`Validating request with schema (${schemaURL})`);
+    //console.log(`Validating request with schema (${schemaURL})`);
     
     const requestValidation = ajv.compile(schemaMap[schemaURL]);
 
     if (requestValidation(req.body)) {
       next();
-    } else {
+    } else {      
+      console.error(requestValidation.errors);
       res.status(400).send({
         error: requestValidation.errors,
       });

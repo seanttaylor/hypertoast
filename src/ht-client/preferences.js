@@ -2,7 +2,7 @@
  * Holds cooking program settings for the toaster; supports different settings schema versions
  */
 export default {
-    latest: {
+    '0.0.2': {
       mode: 'bagel',
       cookConfig: {
         level: 1,
@@ -17,9 +17,8 @@ export default {
           'sse'
         ]
       },
-      version: 'http://localhost:3010/hypertoast/schemas/settings'
     },
-    v1: {
+    '0.0.1': {
       mode: [
         'bagel'
       ],
@@ -31,6 +30,5 @@ export default {
           '1': 50000
         }
       },
-      version: 'http://localhost:3010/hypertoast/schemas/settings-1'
     }
   }

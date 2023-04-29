@@ -24,9 +24,10 @@ import ServerSentEvent from './src/sse/index.js';
 const APP_NAME = 'hypertoast';
 const APP_VERSION = '0.0.2';
 const PORT = 3010;
+
 const settingsSchema = {
-  'http://localhost:3010/hypertoast/schemas/settings-1': settingsSchemav1,
-  'http://localhost:3010/hypertoast/schemas/settings': settingsSchemav2
+  '0.0.1': settingsSchemav1,
+  '0.0.2': settingsSchemav2
 };
 
 const figletize = promisify(figlet);

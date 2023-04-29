@@ -7,12 +7,12 @@
         "href": "/hypertoast/schemas/settings"
     },
     "tags": {
-        "href": "/hypertoast/tags/settings/v/2"
+        "href": "/hypertoast/tags/settings/v/{version}",
+        "templated": true
     },
     "headers": {
         "accept": [
-            "application/vnd.hypertoast",
-            "schema=http://localhost:3010/hypertoast/schemas/settings"
+            "application/vnd.hypertoast"
         ],
         "content-type": "application/json"
     }

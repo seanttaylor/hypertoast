@@ -12,7 +12,11 @@ export default class DomainMapping {
         props.forEach((currentItem) => {
             // ignore tags that exist in the `tags` specification
             if (tags[currentItem]) {
-                this[currentItem] = JsonPointer.get(source, tags[currentItem]);
+                try {
+                    this[currentItem] = JsonPointer.get(source, tags[currentItem]);
+                } catch(e) {
+                    console.error(`Domain mapping error on tag (${currentItem})`);
+                }
             }
         });
     }
