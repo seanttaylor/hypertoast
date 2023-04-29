@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  hypertoast:
+    #container_name: hypertoast
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.hypertoast
+    environment:
+      APP_NAME: hypertoast
+      APP_VERSION: "0.0.1"
+    expose:
+      - 3010
+    volumes:
+      - ./:/src
+    #scale: 2
+    networks:
+      - shared_network
+    restart: always
+  hypertoast_client: 
+    container_name: multigrain
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.multigrain
+    environment:
+      APP_NAME: multigrain
+      APP_VERSION: "0.0.1"
+      HYPERTOAST_ENTRYPOINT_URL: http://hypertoast:3010/hypertoast
+    #expose:
+    #  - 3010
+    depends_on:
+      - hypertoast
+    volumes:
+      - ./:/src
+    restart: always
+    networks:
+      - shared_network
+networks:
+  shared_network:

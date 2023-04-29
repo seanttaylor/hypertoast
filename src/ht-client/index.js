@@ -181,6 +181,13 @@ class HTReuben extends HyperToastClient {
       return response.json();      
     }
   }
+
+  /**
+   * @return {String}
+   */
+  getApplicationRootURL() {
+    return this.#rootURL;
+  }
 }
 
 export { HTReuben };
