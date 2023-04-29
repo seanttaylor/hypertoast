@@ -1,8 +1,11 @@
 import figlet from 'figlet';
 import EventSource from 'eventsource';
-import TOAST_PREFERENCES from './src/ht-client/preferences.js';
 import { promisify } from 'util';
+
 import { HTReuben } from './src/ht-client/index.js';
+import DomainMapping from './src/ht-client/mapping.js';
+import DOMAINS from './src/ht-client/domains.js';
+import TOAST_PREFERENCES from './src/ht-client/preferences.js';
 
 const APP_NAME = 'reuben';
 const APP_VERSION = '0.0.1';
@@ -43,7 +46,7 @@ class HyperToastClientWrapper {
   }
 
   /**
-   * Options the client into receiving real-time updates from the device
+   * Opts the client into receiving real-time updates from the device
    * @return {EventSource}
    */
   enablePushNotifications() {
@@ -56,6 +59,15 @@ class HyperToastClientWrapper {
   }
 
   /**
+   * Shows the current cooking mode on the device marquee
+   * @param {DeviceSettings} settings
+   */
+  async displayCookingMode(settings) {
+    const marquee = await figletize(`hmm... ${settings.getSettings().mode}`);
+    console.log(marquee);
+  }
+
+  /**
    * Establishes the cooking preferences for a specified toast request
    * @param {Object} preferences - a configuration object containing preferences for the toaster
    * @return {Object}
@@ -65,7 +77,28 @@ class HyperToastClientWrapper {
   }
 }
 
-console.log(banner);
+
+/**
+ * 
+ */
+class DeviceSettings {
+  #settings;
+
+  /**
+   * @param {DomainMapping} settings - mapping of device settings from the Service domain to the Client domain
+   */
+  constructor(settings) {
+    this.#settings = settings;
+  }
+
+  /**
+   * 
+   */
+  getSettings() {
+    return this.#settings;
+  }
+}
+
 
 /******** MAIN ********/
 try {
@@ -77,12 +110,18 @@ try {
     await cuizzineArt.makeToast();
     
     const notificationHook = cuizzineArt.enablePushNotifications();
-    const { settings } = htClient.getLinkIdentifiers();
-    const settingsTag = await htClient.getServiceObjectTags(settings.rel);
+    const { settings: settingsLinkId } = htClient.getLinkIdentifiers();
+    const settingsTag = await htClient.getServiceObjectTags(settingsLinkId.rel);
 
-    ///cuizineArt.displayDeviceMarquee();
+    const deviceSettings = new DeviceSettings(
+      new DomainMapping({
+        props: DOMAINS.settings, 
+        source: status.settings, 
+        tags: settingsTag,
+      })
+    );
 
-    console.log({ settingsTag });
+    cuizzineArt.displayCookingMode(deviceSettings);
     
     /******** ********/
     typeof status.applicationVersion === 'string' ? console.log('HyperToast client bootstrapped OK') : console.error('HyperToast client bootstrap error')
@@ -102,7 +141,8 @@ try {
   // 1). Launches processing of links and relations *before* the client application boots above
   const initRequest = await fetch(HYPERTOAST_ENTRYPOINT_URL);  
   const response = await initRequest.json();
-
+  
+  console.log(banner);
   htReuben.parseAdvertisedLinks(response._links);
   await htReuben.cacheAdvertisedLinkRelations();
   

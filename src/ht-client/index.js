@@ -115,7 +115,7 @@ class HTReuben extends HyperToastClient {
   }
 
   /**
-   * @param {String} rel
+   * @param {String} rel - a named link relation in the `_links` object returned from the service on load
    */
   async getServiceObjectTags(rel) {
     const linkRelation = this.#linkRelations[rel];
@@ -136,7 +136,7 @@ class HTReuben extends HyperToastClient {
   
   /**
    * 
-   * @param {String} rel
+   * @param {String} rel - a named link identifier in the `_links` object returned from the service on load
    * @return {Object}
    */
   request(rel) {
