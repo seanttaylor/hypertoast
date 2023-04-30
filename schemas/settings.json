@@ -75,6 +75,16 @@
                 }
             }]
         },
+        "_open": {
+            "type": "object",
+            "default": "",
+            "title": "The _open Schema",
+            "examples": [
+                {
+                    "id": "1qa2wws3edrz56"
+                }
+            ]
+        },
         "notifications": {
             "type": "object",
             "default": {},

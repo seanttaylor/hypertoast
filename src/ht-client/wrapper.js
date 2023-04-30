@@ -60,12 +60,11 @@ export default class HyperToastClientWrapper {
   
     /**
      * Establishes the cooking preferences for a specified toast request
-     * @param {String} version - application version
      * @param {Object} preferences - a configuration object containing preferences for the toaster
      * @return {Object}
      */
-    async setCookPreferences({ version, preferences }) {
-      return this.#client.request('settings')(preferences, version);
+    async setCookPreferences(preferences) {
+      return this.#client.request('settings')(preferences);
     }
 }
   

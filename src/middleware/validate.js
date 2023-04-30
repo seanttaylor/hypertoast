@@ -21,7 +21,11 @@ export default function validateRequest(schemaMap) {
     if (requestValidation(req.body)) {
       next();
     } else {      
-      console.error(requestValidation.errors);
+      console.error({
+        errors: requestValidation.errors,
+        body: req.body
+      });
+      
       res.status(400).send({
         error: requestValidation.errors,
       });

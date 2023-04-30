@@ -24,15 +24,50 @@ services:
       dockerfile: ./docker/Dockerfile.multigrain
     environment:
       APP_NAME: multigrain
-      APP_VERSION: "0.0.1"
+      APP_VERSION: "0.0.2"
       HYPERTOAST_ENTRYPOINT_URL: http://hypertoast:3010/hypertoast
-    #expose:
-    #  - 3010
+      KAFKA_BOOTSTRAP_SERVER: kafka:9092
+      KAFKA_CLIENT_ID: pumpernickel
+      KAFKA_GROUP_ID: pumpernickel_group
+    expose:
+      - 3010
     depends_on:
       - hypertoast
     volumes:
       - ./:/src
     restart: always
+    networks:
+      - shared_network
+  zookeeper:
+    container_name: zookeeper
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+    networks:
+      - shared_network
+  kafka:
+    container_name: kafka
+    image: wurstmeister/kafka
+    depends_on: 
+      - zookeeper
+    ports:
+      - 9092:9092
+    environment: 
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "ingress:1:1"
+    networks:
+      - shared_network    
+  kowl:
+    image: quay.io/cloudhut/kowl:v1.3.1
+    container_name: kowl
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BROKERS=kafka:9092
     networks:
       - shared_network
 networks:

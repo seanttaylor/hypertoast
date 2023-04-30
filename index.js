@@ -105,7 +105,8 @@ ht.subscribe('off', onToasterOff);
  */
 function onToasterOff(state) {
   // console.log('Publishing (toaster-off) event...');
-  this.publish('toaster-off', state);
+  
+  this.publish('toaster-off', { state, settings: this.settings });
 }
 
 /******** ROUTES ********/
@@ -160,7 +161,7 @@ app.put('/hypertoast/v1/state/off', (req, res) => {
 app.put('/hypertoast/v1/settings', validateRequest(settingsSchema), (req, res) => {
   //res.set('content-type', 'application/json');
   res.set('content-type', 'application/vnd.hypertoast');
-   
+  
   ht.settings = Object.assign(ht.settings, { 
     version: res.locals.settingsVersion,
     ...req.body 
