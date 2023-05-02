@@ -4,6 +4,9 @@ import morgan from 'morgan';
 import figlet from 'figlet';
 import path from 'path';
 
+import dockerIpTools from 'docker-ip-get';
+import randomPetName from 'node-petname';
+
 import { promisify } from 'util';
 import { HyperToast } from './src/hypertoast/index.js';
 import validateRequest from './src/middleware/validate.js';
@@ -21,8 +24,9 @@ import {
 
 import ServerSentEvent from './src/sse/index.js';
 
-const APP_NAME = 'hypertoast';
-const APP_VERSION = '0.0.2';
+const APP_NAME = process.env.APP_NAME || 'hypertoast';
+const APP_VERSION = process.env.APP_VERSION || '0.0.2';
+const BROKER_REGISTRATION_URL = process.env.BROKER_REGISTRATION_URL || 'http://multigrain:3010/multigrain/v1/services/register';
 const PORT = 3010;
 
 const settingsSchema = {
@@ -31,14 +35,13 @@ const settingsSchema = {
 };
 
 const figletize = promisify(figlet);
-const getDockerContainerIP = promisify(dockerIpTools.getContainerIp);
+const containerIP = await getContainerIP();
 const banner = await figletize(`${APP_NAME} v${APP_VERSION}`);
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('tiny'));
-
 
 let ht = new HyperToast('HyperToast', {
   mode: ['bagel'],
@@ -99,6 +102,53 @@ const HTSubscriberPlugin = {
 
 ht = Object.assign(ht, HTSubscriberPlugin);
 ht.subscribe('off', onToasterOff);
+
+/******** HELPERS ********/ 
+
+/**
+ * Queries the Docker configuration for the IP address for the container the application is 
+ * executing in when running `docker-compose` with the Multigrain broker
+ * @returns {String|null}
+ */
+async function getContainerIP() {
+  const DEFAULT_ERROR_MESSAGE = 'Container configuration UNAVAILABLE. See issue (https://github.com/seanttaylor/hypertoast/issues/1) for more information';
+  return dockerIpTools
+  .getContainerIp()
+  .then((containerIp) => {
+    if (containerIp === '127.0.0.1') {
+      throw Error(DEFAULT_ERROR_MESSAGE);
+    }
+    return containerIp;
+  })
+  .catch((err) => { 
+    console.error(err);
+    return null;
+  }); 
+}
+
+/**
+ * Registers the URL to the container with the Multigrain broker for request routing management 
+ * 
+ */
+async function registerContainer() {
+  if (!containerIP) {
+    console.info('Cannot register container IP');
+    return;
+  }
+
+  await fetch(BROKER_REGISTRATION_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      serviceName: 'hypertoast',
+      serviceAddress: `${containerIP}:${PORT}`,
+      serviceURI: `hypertoast:${randomPetName(2, '-')}`
+    }),
+    headers: {
+      'content-type': 'application/json'
+    }
+  });
+
+}
 
 
 /******** SUBSCRIPTIONS ********/ 
@@ -210,7 +260,8 @@ app.use((err, req, res, next) => {
   res.status(status).send({ status, error: 'There was an error.' });
 });
 
-app.listen(PORT, () => {  
+app.listen(PORT, () => {
+  registerContainer();
   console.log(banner);
   console.log(` App listening at http://localhost:${PORT}`);
 });

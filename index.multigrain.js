@@ -29,12 +29,16 @@ const kafkaDP = new KafkaDataPipe({
 const figletize = promisify(figlet);
 const banner = await figletize(`${APP_NAME} v${APP_VERSION}`);
 const app = express();
-const toastInProgress = new Set();
 
 kafkaDP.open();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('tiny'));
+
+/**
+ * 
+ */
+const SERVICE_REGISTRY = {};
 
 /******** MAIN ********/
 try {
@@ -94,6 +98,28 @@ app.get('/multigrain/status', (req, res) => {
   });
 });
 
+app.post('/multigrain/v1/services/register', (req, res) => {
+  console.log(`Registering service... (${req.body.serviceURI})`);
+  if (SERVICE_REGISTRY[req.body.serviceName]) {
+    SERVICE_REGISTRY[req.body.serviceName][req.body.serviceURI] = req.body;
+    res.json({
+      serviceName: req.body.serviceName,
+      serviceURI: req.body.serviceURI,
+      timestamp: new Date().toISOString()
+    });
+    return;
+  }
+
+  SERVICE_REGISTRY[req.body.serviceName] = {};
+  SERVICE_REGISTRY[req.body.serviceName][req.body.serviceURI] = req.body;
+  
+  res.json({
+    serviceName: req.body.serviceName,
+    serviceURI: req.body.serviceURI,
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.post('/multigrain/v1/toast', (req, res) => {
   const id = crypto.randomUUID();
   const myMessage = new Message(
@@ -111,10 +137,7 @@ app.post('/multigrain/v1/toast', (req, res) => {
       message: JSON.stringify(myMessage.value())
     });
 
-    res.json({ 
-      id,
-      ...req.body
-    });
+    res.json({ id, ...req.body });
   } catch(e) {
     console.error(e);
 

@@ -9,11 +9,12 @@ services:
     environment:
       APP_NAME: hypertoast
       APP_VERSION: "0.0.1"
+      BROKER_REGISTRATION_URL: http://multigrain:3010/multigrain/v1/services/register
     expose:
       - 3010
     volumes:
       - ./:/src
-    #scale: 2
+    scale: 2
     networks:
       - shared_network
     restart: always
