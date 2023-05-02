@@ -4,7 +4,7 @@ A hypermedia-enabled smart toaster
 
 ## Overview
 
-HyperToast manages requests for new toast via a RESTful API.
+HyperToast manages requests for new toast via a RESTful API. The API supports turning the toaster on and and off as well as adjusting cooking settings.
 
 ## Local Development
 
@@ -12,7 +12,7 @@ HyperToast manages requests for new toast via a RESTful API.
     * Do `docker-compose up`
     * The Reuben client will automatically launch a single request for toast
 
-* Cluster Mode
+* Cluster Mode (beta)
     * Do `docker-compose -f docker-compose-multigrain.yml up`
     * Make a `PUT` request against the broker endpoint `/multigrain/v1/toast` with following example  payload:
 
@@ -37,16 +37,19 @@ HyperToast manages requests for new toast via a RESTful API.
 
 Execute this requests a few times and note the enqueueing of toast requests via the Multigrain broker. Observe the HyperToast instances processing the toast requests as individual cooking cycles complete.
 
+### Reuben 
+A client application to demonstrate the HyperToast service. Reuben makes a single request for toast according to settings specified in the application. See the `Settings` [schema](/schemas/settings.json) for valid values in the settings configuration.     
+
 ### States
 An instance of HyperToast is a stateful service. When a request for toast comes in, the service transitions through four discrete states. They are as follows:
 
-* On
+* `On`
     * On receiving a toast request the device initializes in this state. The API will reject new toast requests in this state with a `400` status code.
-* Preheating
+* `Preheating`
     * The device is preparing to process (cook) the toast request. The API will reject new toast requests in this state with a `400` status code.
-* Cooking
+* `Cooking`
     * The device is processing (cooking) the toast. The API will reject new toast requests in this state with a `400` status code.
-* Off
+* `Off`
     * The device has finished cooking the toast. Clients on version `0.0.2` of the HyperToast service can opt-in to receive a push notification when the device enters this state. The device is now ready to receive new toast requests.
 
 ## Going Further
@@ -59,8 +62,7 @@ When a request for toast is routed to a HyperToast instance that is already cook
 
 ![Architectural Diagram](/docs/multigrain-architectural-diagram.png)
 
-### References and Further Reading
-
+### References and Further Reading on Hypermedia
 
 * [Justice Will Take Us Millions Of Intricate Moves](https://www.crummy.com/writing/speaking/2008-QCon/)
     * Key insight from the above [here](https://www.crummy.com/writing/speaking/2008-QCon/act3.html)
