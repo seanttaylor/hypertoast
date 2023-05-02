@@ -49,8 +49,7 @@ try {
         const { payload } = JSON.parse(message.value.toString());
         const { id, ...preferences } = payload;
         
-        toastInProgress.add(id);
-        await cuizzineArt.setCookPreferences({ ...preferences, _open: { userId: id } });
+        await cuizzineArt.setCookPreferences({ ...preferences, _open: { toastId: id } });
         await cuizzineArt.makeToast();
         }
       });
@@ -68,7 +67,9 @@ try {
         const { header, payload } = JSON.parse(event.data);
         
         // Check for in progress toast with `userId in `payload._open.userId`
-        
+        console.log({
+          userId: payload.settings._open,
+        });
       });    
     });
     
@@ -101,10 +102,7 @@ app.post('/multigrain/v1/toast', (req, res) => {
       eventType: 'create',
       eventName: 'make.toast',
   }),
-    new MessageBody({ 
-      id, 
-      ...req.body 
-    })
+    new MessageBody({ id, ...req.body })
   );
 
   try { 

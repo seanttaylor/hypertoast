@@ -122,10 +122,19 @@ class ToasterOnState extends ToasterState {
     this.#toaster = ht;
   }
 
+  /**
+   * 
+   * @returns {HyperToast} 
+   */
   on() {
     console.log('Toaster is already on.');
+    return this.#toaster;
   }
 
+  /**
+   * 
+   * @returns {HyperToast} 
+   */
   off() {
     console.log('Toaster is turning off...');
     this.#toaster.setState(new ToasterOffState(this.#toaster));
@@ -163,6 +172,7 @@ class ToasterPreheatingStateDefault extends ToasterState {
 
   on() {
     console.log('Toaster is already on.');
+    return this.#toaster;
   }
 
   off() {
@@ -237,6 +247,7 @@ class ToasterCookingState extends ToasterState {
 
   on() {
     console.log('Toaster is already on.');
+    return this.#toaster;
   }
 
   off() {

@@ -31,12 +31,14 @@ const settingsSchema = {
 };
 
 const figletize = promisify(figlet);
+const getDockerContainerIP = promisify(dockerIpTools.getContainerIp);
 const banner = await figletize(`${APP_NAME} v${APP_VERSION}`);
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('tiny'));
+
 
 let ht = new HyperToast('HyperToast', {
   mode: ['bagel'],
@@ -98,6 +100,7 @@ const HTSubscriberPlugin = {
 ht = Object.assign(ht, HTSubscriberPlugin);
 ht.subscribe('off', onToasterOff);
 
+
 /******** SUBSCRIPTIONS ********/ 
 /**
  * A handler function to execute when the 'toaster-off' state is triggered
@@ -143,7 +146,6 @@ app.put('/hypertoast/v1/state/on', (req, res) => {
   res.set('content-type', 'application/vnd.hypertoast');
 
   ht = ht.on();
-
   HyperToastWriter.setStrategy(new HTOnStrategy());
   res.json(HyperToastWriter.write(ht.getStatus()));
 });
@@ -208,7 +210,7 @@ app.use((err, req, res, next) => {
   res.status(status).send({ status, error: 'There was an error.' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, () => {  
   console.log(banner);
   console.log(` App listening at http://localhost:${PORT}`);
 });
