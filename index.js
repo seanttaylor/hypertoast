@@ -26,6 +26,7 @@ import ServerSentEvent from './src/sse/index.js';
 
 const APP_NAME = process.env.APP_NAME || 'hypertoast';
 const APP_VERSION = process.env.APP_VERSION || '0.0.2';
+const INSTANCE_NAME = randomPetName(2, '-');
 const BROKER_REGISTRATION_URL = process.env.BROKER_REGISTRATION_URL || 'http://multigrain:3010/multigrain/v1/services/register';
 const PORT = 3010;
 
@@ -43,7 +44,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('tiny'));
 
-let ht = new HyperToast('HyperToast', {
+let ht = new HyperToast(INSTANCE_NAME, {
   mode: ['bagel'],
   cookConfig: {
     level: [1],
@@ -132,16 +133,16 @@ async function getContainerIP() {
  */
 async function registerContainer() {
   if (!containerIP) {
-    console.info('Cannot register container IP');
+    console.info('Info: Cannot register container IP');
     return;
   }
 
   await fetch(BROKER_REGISTRATION_URL, {
     method: "POST",
     body: JSON.stringify({
-      serviceName: 'hypertoast',
-      serviceAddress: `${containerIP}:${PORT}`,
-      serviceURI: `hypertoast:${randomPetName(2, '-')}`
+      name: INSTANCE_NAME,
+      href: `http://${containerIP}:${PORT}/hypertoast/v1/status`,
+      uri: `hypertoast:${INSTANCE_NAME}`
     }),
     headers: {
       'content-type': 'application/json'
@@ -263,5 +264,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   registerContainer();
   console.log(banner);
-  console.log(` App listening at http://localhost:${PORT}`);
+  console.log(`\nApp (${INSTANCE_NAME}) listening at http://localhost:${PORT}`);
 });

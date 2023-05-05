@@ -181,7 +181,7 @@
                 "2": 120000
             }
         },
-        "notification": {
+        "notifications": {
             "shouldNotify": true,
             "type": [
                 "http"

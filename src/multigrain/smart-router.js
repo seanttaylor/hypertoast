@@ -5,6 +5,6 @@ export default class SmartRouter {
     /**
      *
      */
-    route() {}
+    getRoute() {}
   }
   

@@ -1,5 +1,44 @@
-import { AsyncIterator, Iterable, IteratorResult } from './async-iterator.js';
+import { AsyncIterator, Iterable } from './async-iterator.js';
 import SmartRouter from './smart-router.js';
+
+class ServiceRegistry {
+  instance;
+  #entries = {};
+
+  constructor() {
+  
+  }
+
+  /**
+   * 
+   * @param {String} uri - colon-separated string in the following format (`namespace:entryName`)
+   * @param {Object} entry
+   */
+  addEntry({ uri, entry }) {
+    const [ namespace, entryName ] = uri.split(':');
+    if (this.#entries[namespace]) {
+      this.#entries[namespace][entryName] = entry;
+      return;
+    }
+
+    this.#entries[namespace] = {};
+    this.#entries[namespace][entryName] = entry;
+  }
+
+  /**
+   * @returns {Array}
+   */
+  getEntries() {
+    return Object.values(this.#entries.hypertoast);
+  }
+
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new ServiceRegistry();
+    }
+    return this.instance;
+  }
+}
 
 /**
  * Iterates over a series of Service Registry entries describing metadata about 
@@ -13,7 +52,7 @@ class HTIterable extends Iterable {
 
 
   /**
-   * @param {Object} entries - entries from the Service Registry on HyperToast instances
+   * @param {Array} entries - entries from the Service Registry on HyperToast instances
    */
   constructor(entries) {
     super();
@@ -31,11 +70,7 @@ class HTIterable extends Iterable {
     }
 
     const done = this.#retries === this.#MAX_RETRIES;
-
-    const value = done ? undefined : ({ 
-      href: this.#entries[this.#currentIdx]['href'],
-      instanceName: this.#entries[this.#currentIdx]['name'] 
-    });
+    const value = done ? undefined : (this.#entries[this.#currentIdx]);
 
     this.#currentIdx++;
     
@@ -55,7 +90,7 @@ class HTSmartRouter extends SmartRouter {
 
   /**
    * 
-   * @param {Object} serviceRegistry
+   * @param {ServiceRegistry} serviceRegistry
    */
   constructor(serviceRegistry) {
     super();
@@ -63,39 +98,32 @@ class HTSmartRouter extends SmartRouter {
   }
 
   /**
-   * Routes requests for toast to the next available HyperToast instance
-   * @param {Object} request - HyperToast message requesting new toast
+   * 
+   *
    */
-  async route(request) {
+  async getRoute() {
+    console.log(this.#serviceRegistry.getEntries());
+
     const iterableHTInstances = new HTIterable(
-      Object.values(this.#serviceRegistry.hypertoast)
+      this.#serviceRegistry.getEntries()
     );
     const htInstanceList = new AsyncIterator(iterableHTInstances);
 
     for await (const instance of htInstanceList) {
-      const { instanceName, href } = instance;
+      const { name, href } = instance;
 
-      console.log(`checking instance... (${instanceName})`);
+      console.log(`querying instance status... (${name})`);
 
-      const statusCheckResponse = await fetch(href);
+      const statusQuery = await fetch(href);
+      const statusQueryResponse = await statusQuery.json();
+      const instanceIsAvailable = (statusQuery.status === 200 && statusQueryResponse.name === 'off');
 
-      if (statusCheckResponse.status === 200) {
-        console.log(`available instance located... (${instanceName})`);
-        
-        const messageResponse = await fetch('https://httpbin.org/anything', {
-          method: 'POST',
-          body: JSON.stringify(request),
-          headers: {
-            'content-type': 'application/json'
-          }
-        });
-
-        const responseData = await messageResponse.json();
-        console.log(responseData.json);
-        break;
+      if (instanceIsAvailable) {
+        console.log(`available instance located... (${name})`);
+        return instance;
       }
     }
   }
 }
 
-export { HTSmartRouter };
+export { HTSmartRouter, ServiceRegistry };
