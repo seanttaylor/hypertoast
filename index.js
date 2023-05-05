@@ -138,7 +138,7 @@ async function registerContainer() {
   }
 
   await fetch(BROKER_REGISTRATION_URL, {
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify({
       name: INSTANCE_NAME,
       host: `http://${containerIP}`,
@@ -161,7 +161,11 @@ async function registerContainer() {
 function onToasterOff(state) {
   // console.log('Publishing (toaster-off) event...');
   
-  this.publish('toaster-off', { state, settings: this.settings });
+  this.publish('toaster-off', { 
+    state, 
+    deviceName: this.deviceName,
+    settings: this.settings, 
+  });
 }
 
 /******** ROUTES ********/

@@ -24,6 +24,7 @@ const GROUP_ID = process.env.KAFKA_GROUP_ID || 'pumpernickel_group';
 const KAFKA_BOOTSTRAP_SERVER = process.env.KAFKA_BOOTSTRAP_SERVER;
 const CLIENT_ID = process.env.KAFKA_CLIENT_ID || 'pumpernickel';
 
+const TOAST_READY = {};
 const serviceRegistry = ServiceRegistry.getInstance();
 const smartRouter = new HTSmartRouter(serviceRegistry);
 const kafkaDP = new KafkaDataPipe({ 
@@ -66,13 +67,25 @@ try {
         const { id, ...preferences } = payload;        
 
         try {
-          //const resumeMessageProcessing = pause();
-
           await cuizzineArt.findAvailableToaster.call(htClient);
+          const notificationHook = cuizzineArt.enablePushNotifications();
+
           await cuizzineArt.setCookPreferences({ ...preferences, _open: { toastId: id } });
           await cuizzineArt.makeToast();
           
-          //resumeMessageProcessing();
+          notificationHook.addEventListener('toaster-off', (event)=> {
+            // 3). The client listens for the 'toaster-off' event from the HyperToast service to
+            // learn when the toast is ready via Server-Sent Event
+            
+            console.log('Received HyperToast message...');
+            const eventData = JSON.parse(event.data);
+
+            TOAST_READY[eventData.payload.settings._open.toastId] = {
+              timestamp: eventData.payload.state.timestamp,
+              deviceName: eventData.payload.deviceName,
+              id: eventData.payload.settings._open.toastId
+            };
+          });    
 
         } catch(e) {
           console.error(e);
@@ -103,6 +116,15 @@ app.get('/multigrain/status', (req, res) => {
   });
 });
 
+app.get('/multigrain/v1/services', (req, res) => {
+  const serviceList = serviceRegistry.getEntries();
+
+  res.json({
+    count: serviceList.length,
+    entries: serviceList
+  });
+});
+
 app.post('/multigrain/v1/services/register', (req, res) => {
   console.log(`Registering service... (${req.body.name})`);
   serviceRegistry.addEntry({
@@ -114,6 +136,15 @@ app.post('/multigrain/v1/services/register', (req, res) => {
     serviceName: req.body.name,
     serviceURI: req.body.uri,
     timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/multigrain/v1/toast', (req, res) => {
+  const toastList = Object.values(TOAST_READY);
+  
+  res.json({
+    count: toastList.length,
+    entries: toastList
   });
 });
 

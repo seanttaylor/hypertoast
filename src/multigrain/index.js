@@ -30,7 +30,12 @@ class ServiceRegistry {
    * @returns {Array}
    */
   getEntries() {
-    return Object.values(this.#entries.hypertoast);
+    try {
+      return Object.values(this.#entries.hypertoast);
+      // The only reason this fails is if there are no services registered
+    } catch(e) {
+      return [];
+    }
   }
 
   static getInstance() {
