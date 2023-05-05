@@ -1,5 +1,6 @@
 import { AsyncIterator, Iterable } from './async-iterator.js';
 import SmartRouter from './smart-router.js';
+import { setTimeout } from 'timers/promises';
 
 class ServiceRegistry {
   instance;
@@ -46,7 +47,8 @@ class ServiceRegistry {
  */
 class HTIterable extends Iterable {
   #entries;
-  #MAX_RETRIES = 3;
+  #MAX_RETRIES = 5;
+  #RETY_TIMEOUT = 10000;
   #currentIdx = 0;
   #retries = 0;
 
@@ -67,8 +69,10 @@ class HTIterable extends Iterable {
     if (this.#currentIdx === this.#entries.length) {
       this.#currentIdx = 0;
       this.#retries++; 
+      console.info(`Info: no available instances found. Retrying in (${this.#RETY_TIMEOUT/1000}) seconds`);
+      await setTimeout(10000);
     }
-
+    
     const done = this.#retries === this.#MAX_RETRIES;
     const value = done ? undefined : (this.#entries[this.#currentIdx]);
 
@@ -102,19 +106,17 @@ class HTSmartRouter extends SmartRouter {
    *
    */
   async getRoute() {
-    console.log(this.#serviceRegistry.getEntries());
-
     const iterableHTInstances = new HTIterable(
       this.#serviceRegistry.getEntries()
     );
     const htInstanceList = new AsyncIterator(iterableHTInstances);
 
     for await (const instance of htInstanceList) {
-      const { name, href } = instance;
+      const { name, host, port } = instance;
 
       console.log(`querying instance status... (${name})`);
 
-      const statusQuery = await fetch(href);
+      const statusQuery = await fetch(`${host}:${port}/hypertoast/v1/status`);
       const statusQueryResponse = await statusQuery.json();
       const instanceIsAvailable = (statusQuery.status === 200 && statusQueryResponse.name === 'off');
 

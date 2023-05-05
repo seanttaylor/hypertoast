@@ -1,4 +1,4 @@
-import { HyperToast } from "../src/hypertoast/index.js";
+import { HyperToast } from '../src/hypertoast/index.js';
 
 /***
  *
@@ -112,7 +112,7 @@ class ToasterOnState extends ToasterState {
     
     const cookTime = this.getCookTime(ht.settings);
     
-    this.statusMessage = 'Toaster is turning on...';
+    this.statusMessage = `Toaster (${ht.deviceName}) is turning on...`;
     this.name = 'on';
     this.timestamp = new Date().toISOString();
     this.cookStartTimeMillis = new Date().getTime();
@@ -136,7 +136,7 @@ class ToasterOnState extends ToasterState {
    * @returns {HyperToast} 
    */
   off() {
-    console.log('Toaster is turning off...');
+    console.log(`Toaster (${this.#toaster.deviceName}) is turning off...`);
     this.#toaster.setState(new ToasterOffState(this.#toaster));
     return this.#toaster;
   }
@@ -156,7 +156,7 @@ class ToasterPreheatingStateDefault extends ToasterState {
 
     const WARMING_INTERVAL_MILLIS = 10000;
 
-    this.statusMessage = 'Toaster is preheating...';
+    this.statusMessage = `Toaster (${ht.deviceName}) is preheating...`;
     this.name = 'preheating';
     this.timestamp = new Date().toISOString();
     this.cookEndTimeMillis = ht.state.cookEndTimeMillis;
@@ -176,7 +176,7 @@ class ToasterPreheatingStateDefault extends ToasterState {
   }
 
   off() {
-    console.log('Toaster is turning off...');
+    console.log(`Toaster (${this.#toaster.deviceName}) is turning off...`);
     this.#toaster.setState(new ToasterOffState(this.#toaster));
     return this.#toaster;
   }
@@ -193,7 +193,7 @@ class ToasterPreheatingStateEnhanced extends ToasterPreheatingStateDefault {
    */
   constructor(ht) {
     super(ht);
-    this.statusMessage = 'Toaster preheating in enhanced mode...';
+    this.statusMessage = `Toaster (${ht.deviceName}) preheating in enhanced mode...`;
   }
 
   off() {
@@ -217,7 +217,7 @@ class ToasterCookingState extends ToasterState {
     const COOK_INTERVAL_MILLIS = 1000;
     let cookIntervalHook;
 
-    this.statusMessage = 'Toaster is cooking...';
+    this.statusMessage = `Toaster (${ht.deviceName}) is cooking...`;
     this.name = 'cooking';
     this.timestamp = new Date().toISOString();
     this.cookInProgress = true;
@@ -268,7 +268,7 @@ class ToasterOffState extends ToasterState {
   constructor(ht) {
     super();
 
-    this.statusMessage = 'Toaster is off';
+    this.statusMessage = `Toaster (${ht.deviceName}) is off`;
     this.name = 'off';
     this.timestamp = new Date().toISOString();
     this.cookEndTimeMillis = null;

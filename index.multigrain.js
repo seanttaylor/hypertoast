@@ -5,6 +5,7 @@ import figlet from 'figlet';
 import express from 'express';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
+import randomPetName from 'node-petname';
 
 import { HTReuben } from './src/ht-client/index.js';
 import HyperToastClientWrapper from './src/ht-client/wrapper.js';
@@ -35,20 +36,10 @@ const kafkaDP = new KafkaDataPipe({
  * 
  */
 const HTClientSmartRoutingPlugin = {
-  async makeToast() {
-    console.log(
-      `Making game changing toast on (${this.currentRoute.instanceName})`
-    );
-  },
-  async setCookPreferences(preferences) {
- 
-  },
-  /**
-   * Sets the specified HyperToast application instance to push requests to
-   * @param {Object} route 
-   */
-  setSmartRoute(route) {
-    this.currentRoute = route;
+  async findAvailableToaster() {
+    const route = await smartRouter.getRoute();
+    console.log(route);
+    this.setApplicationRootURL(`${route.host}:${route.port}`);
   }
 };
 
@@ -65,28 +56,29 @@ app.use(morgan('tiny'));
 try {
     const htReuben = new HTReuben(HYPERTOAST_ROOT_URL, async function onReady(htClient) {
       // 2). Executes when the link and relations processing is *completed* 
+
       let cuizzineArt = new HyperToastClientWrapper(htClient);
       cuizzineArt = Object.assign(cuizzineArt, HTClientSmartRoutingPlugin);
-    
-      kafkaDP.onPull({ topic: "ingress", onMessage: async ({ message }) => {
+      
+      // For more info about pausing/resuming Kafka topics see (https://kafka.js.org/docs/consuming#pause-amp-resume);
+      kafkaDP.onPull({ topic: 'ingress', onMessage: async ({ message, pause }) => {
         const { payload } = JSON.parse(message.value.toString());
-        const { id, ...preferences } = payload;
-        
+        const { id, ...preferences } = payload;        
+
         try {
-          const route = await smartRouter.getRoute();
+          //const resumeMessageProcessing = pause();
+
+          await cuizzineArt.findAvailableToaster.call(htClient);
+          await cuizzineArt.setCookPreferences({ ...preferences, _open: { toastId: id } });
+          await cuizzineArt.makeToast();
           
-          cuizzineArt.setSmartRoute(route);
-          //await cuizzineArt.setCookPreferences({ ...preferences, _open: { toastId: id } });
-          //await cuizzineArt.makeToast();
+          //resumeMessageProcessing();
 
         } catch(e) {
           console.error(e);
         }
-
-        //const availableHTInstance = await smartRouter.findAvailableInstance();
-        //await cuizzineArt.setCookPreferences({ ...preferences, _open: { toastId: id } });
-        //await cuizzineArt.makeToast();
-        }
+      
+      }
       });
     });
     
@@ -119,14 +111,14 @@ app.post('/multigrain/v1/services/register', (req, res) => {
   });
   
   res.json({
-    serviceName: req.body.serviceName,
-    serviceURI: req.body.serviceURI,
+    serviceName: req.body.name,
+    serviceURI: req.body.uri,
     timestamp: new Date().toISOString()
   });
 });
 
 app.post('/multigrain/v1/toast', (req, res) => {
-  const id = crypto.randomUUID();
+  const id = `toast:${randomPetName(2, '-')}:${crypto.randomUUID()}`;
   const myMessage = new Message(
     new MessageHeader({
       id: `/multigrain/v1/toast/${id}`,

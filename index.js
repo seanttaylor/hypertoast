@@ -141,7 +141,8 @@ async function registerContainer() {
     method: "POST",
     body: JSON.stringify({
       name: INSTANCE_NAME,
-      href: `http://${containerIP}:${PORT}/hypertoast/v1/status`,
+      host: `http://${containerIP}`,
+      port: PORT,
       uri: `hypertoast:${INSTANCE_NAME}`
     }),
     headers: {
@@ -214,7 +215,8 @@ app.put('/hypertoast/v1/state/off', (req, res) => {
 app.put('/hypertoast/v1/settings', validateRequest(settingsSchema), (req, res) => {
   //res.set('content-type', 'application/json');
   res.set('content-type', 'application/vnd.hypertoast');
-  
+  console.log(`Setting preferences on toaster... (${ht.deviceName})`);
+
   ht.settings = Object.assign(ht.settings, { 
     version: res.locals.settingsVersion,
     ...req.body 

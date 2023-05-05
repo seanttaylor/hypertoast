@@ -188,6 +188,13 @@ class HTReuben extends HyperToastClient {
   getApplicationRootURL() {
     return this.#rootURL;
   }
+
+  /**
+   * @param {String} rootURL
+   */
+  setApplicationRootURL(rootURL) {
+    return this.#rootURL = rootURL;
+  }
 }
 
 export { HTReuben };
