@@ -34,7 +34,7 @@ const linkRelations = {
 };
 
 /**
- * 
+ * Manages strategies for writing HyperToast instances
  */
 class HyperToastWriter {
     static #context;
@@ -70,7 +70,8 @@ class HyperToastWriterStrategy {
 }
 
 /**
- * Prints a representation of the status resource in the HAL hypermedia format
+ * Prints a representation of the status resource in 
+ * the HAL hypermedia format
  */
 class HTStatusStrategy extends HyperToastWriterStrategy {
     /**
@@ -100,7 +101,8 @@ class HTStatusStrategy extends HyperToastWriterStrategy {
 }
   
 /**
- * Prints a representation of the 'on' state in the HAL hypermedia format
+ * Prints a representation of the 'on' state in 
+ * the HAL hypermedia format
  */
 class HTOnStrategy extends HyperToastWriterStrategy {
 
@@ -123,7 +125,8 @@ class HTOnStrategy extends HyperToastWriterStrategy {
 }
   
 /**
- * Prints a representation of the 'off' state in the HAL hypermedia format
+ * Prints a representation of the 'off' state in 
+ * the HAL hypermedia format
  */
 class HTOffStrategy extends HyperToastWriterStrategy {
   
@@ -146,7 +149,8 @@ class HTOffStrategy extends HyperToastWriterStrategy {
 }
 
 /**
- * Prints a representation of the 'home' state in the HAL hypermedia format
+ * Prints a representation of the 'home' state in 
+ * the HAL hypermedia format
  */
 class HTHomeStrategy extends HyperToastWriterStrategy {
   
@@ -168,7 +172,8 @@ class HTHomeStrategy extends HyperToastWriterStrategy {
 }
 
 /**
- * Prints a representation of the 'home' state in the HAL hypermedia format
+ * Prints a representation of the 'home' state in 
+ * the HAL hypermedia format
  */
 class HTSettingsStrategy extends HyperToastWriterStrategy {
   

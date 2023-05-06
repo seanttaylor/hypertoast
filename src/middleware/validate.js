@@ -14,7 +14,7 @@ export default function validateRequest(schemaMap) {
 
     res.locals.settingsVersion = schemaURL;
 
-    //console.log(`Validating request with schema (${schemaURL})`);
+    //console.info(`Info: Validating request with schema (${schemaURL})`);
     
     const requestValidation = ajv.compile(schemaMap[schemaURL]);
 

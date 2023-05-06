@@ -62,7 +62,7 @@ class HTReuben extends HyperToastClient {
 
   }
   /**
-   * 
+   * Collects all available link information about a HyperToast application
    * @param {Object} links - the `_links` object on an application/vnd.hypertoast API response
    */
   parseAdvertisedLinks(links) {
@@ -117,6 +117,7 @@ class HTReuben extends HyperToastClient {
   }
 
   /**
+   * Gets all semantic tags related to specific link relation
    * @param {String} rel - a named link relation in the `_links` object returned from the service on load
    */
   async getServiceObjectTags(rel) {
@@ -137,7 +138,7 @@ class HTReuben extends HyperToastClient {
   } 
   
   /**
-   * 
+   * Allows clients to make requests based on the service capability they are interested vs rather than a specified URL
    * @param {String} rel - a named link identifier in the `_links` object returned from the service on load
    * @return {Object}
    */

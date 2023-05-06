@@ -11,9 +11,10 @@
 class AsyncIterator {
     /**
      * @param {Iterable} iterable
+     * @return {Object}
      */
     constructor(iterable) {
-      // Allows us to asynchronously iterate over the object returned by this constructor with `for..await`
+      // This pattern allows us to asynchronously iterate over the object returned by this constructor with `for..await`
       // See Mozilla docs on Async Iterators (https://tinyurl.com/3y4mduvc)
       
       return {
@@ -23,23 +24,27 @@ class AsyncIterator {
       };
     }
   }
-  
-  class Iterable {
-    /**
-     * Method containing the logic that drives the iterator
-     * @returns {IteratorResult}
-     */
-    next() {}
-  
-    /**
-     * This method is executed if the consumer calls 'break' or 'return' early in 
-     * the iteration
-     * @returns {IteratorResult}
-     */
-    return() {
-      return { done: true };
-    }
+ 
+/**
+ * Factory function for returning JavaScript Iterator objects. See Mozilla docs on 
+ * Iterators and Generators https://tinyurl.com/36zuesss
+ */  
+class Iterable {
+  /**
+   * Method containing the logic that drives the iterator
+   * @returns {IteratorResult}
+   */
+  next() {}
+
+  /**
+   * This method is executed if the consumer calls 'break' or 'return' early in 
+   * the iteration
+   * @returns {IteratorResult}
+   */
+  return() {
+    return { done: true };
   }
+}
   
-  export { AsyncIterator, Iterable };
+export { AsyncIterator, Iterable };
   

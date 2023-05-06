@@ -5,11 +5,11 @@ import { promisify } from 'util';
 const figletize = promisify(figlet);
 
 /**
- * Adds better some semantics around interacting with the HyperToast client; not expressly necessary
+ * Adds better semantics around interacting with 
+ * the HyperToast client
  */
 export default class HyperToastClientWrapper {
     #client;
-    #HYPERTOAST_ROOT_URL;
   
     /**
      * 
@@ -17,7 +17,6 @@ export default class HyperToastClientWrapper {
      */
     constructor(client) {
       this.#client = client;
-      this.#HYPERTOAST_ROOT_URL = client.getApplicationRootURL();
     }
   
     /**
@@ -41,9 +40,10 @@ export default class HyperToastClientWrapper {
      * @return {EventSource}
      */
     enablePushNotifications() {
-      // console.log('enabling push notifications...');
+      console.info('Info: Requesting push notifications...');
       const links = this.#client.getLinkIdentifiers();
-      const sseEndpoint = `${this.#HYPERTOAST_ROOT_URL}${links['rt-updates']['href']}`;
+      const htRootURL = this.#client.getApplicationRootURL();
+      const sseEndpoint = `${htRootURL}${links['rt-updates']['href']}`;
       const sseHook = new EventSource(sseEndpoint);
       
       return sseHook;

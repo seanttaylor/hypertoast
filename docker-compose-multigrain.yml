@@ -14,7 +14,7 @@ services:
       - 3010
     volumes:
       - ./:/src
-    scale: 2
+    scale: 3
     networks:
       - shared_network
     restart: always

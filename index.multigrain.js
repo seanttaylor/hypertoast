@@ -34,13 +34,14 @@ const kafkaDP = new KafkaDataPipe({
 });
 
 /**
- * 
+ * Adds capability of identifying available 
+ * HyperToast application instances to HyperToastClient
  */
 const HTClientSmartRoutingPlugin = {
   async findAvailableToaster() {
-    const route = await smartRouter.getRoute();
-    console.log(route);
-    this.setApplicationRootURL(`${route.host}:${route.port}`);
+    const instanceMetadata = await smartRouter.getAppInstanceMetadata();
+    // `this` refers to an instance of {HyperToastClient}. See (./src/ht-client/index.js).
+    this.setApplicationRootURL(`${instanceMetadata.host}:${instanceMetadata.port}`);
   }
 };
 
@@ -55,52 +56,51 @@ app.use(morgan('tiny'));
 
 /******** MAIN ********/
 try {
-    const htReuben = new HTReuben(HYPERTOAST_ROOT_URL, async function onReady(htClient) {
-      // 2). Executes when the link and relations processing is *completed* 
+  const htReuben = new HTReuben(HYPERTOAST_ROOT_URL, async function onReady(htClient) {
+    // 2). Executes when the link and relations processing is *completed* 
 
-      let cuizzineArt = new HyperToastClientWrapper(htClient);
-      cuizzineArt = Object.assign(cuizzineArt, HTClientSmartRoutingPlugin);
-      
-      // For more info about pausing/resuming Kafka topics see (https://kafka.js.org/docs/consuming#pause-amp-resume);
-      kafkaDP.onPull({ topic: 'ingress', onMessage: async ({ message, pause }) => {
-        const { payload } = JSON.parse(message.value.toString());
-        const { id, ...preferences } = payload;        
+    let cuizzineArt = new HyperToastClientWrapper(htClient);
+    cuizzineArt = Object.assign(cuizzineArt, HTClientSmartRoutingPlugin);
+    
+    kafkaDP.onPull({ topic: 'ingress', onMessage: async ({ message }) => {
+      const { payload } = JSON.parse(message.value.toString());
+      const { id, ...preferences } = payload;        
 
-        try {
-          await cuizzineArt.findAvailableToaster.call(htClient);
-          const notificationHook = cuizzineArt.enablePushNotifications();
+      try {
+        await cuizzineArt.findAvailableToaster.call(htClient);
+        const notificationHook = cuizzineArt.enablePushNotifications();
 
-          await cuizzineArt.setCookPreferences({ ...preferences, _open: { toastId: id } });
-          await cuizzineArt.makeToast();
+        await cuizzineArt.setCookPreferences({ ...preferences, _open: { toastId: id } });
+        await cuizzineArt.makeToast();
+        
+        notificationHook.addEventListener('toaster-off', (event)=> {
+          // 3). The client listens for the 'toaster-off' event from the HyperToast service to
+          // learn when the toast is ready via Server-Sent Event
+          const { payload } = JSON.parse(event.data);
           
-          notificationHook.addEventListener('toaster-off', (event)=> {
-            // 3). The client listens for the 'toaster-off' event from the HyperToast service to
-            // learn when the toast is ready via Server-Sent Event
-            
-            console.log('Received HyperToast message...');
-            const eventData = JSON.parse(event.data);
+          TOAST_READY[payload.settings._open.toastId] = {
+            timestamp: payload.state.timestamp,
+            deviceName: payload.deviceName,
+            id: payload.settings._open.toastId
+          };
 
-            TOAST_READY[eventData.payload.settings._open.toastId] = {
-              timestamp: eventData.payload.state.timestamp,
-              deviceName: eventData.payload.deviceName,
-              id: eventData.payload.settings._open.toastId
-            };
-          });    
+          console.log(`Received HyperToast message from: (${payload.deviceName})`);
+        });    
 
-        } catch(e) {
-          console.error(e);
-        }
-      
+      } catch(e) {
+        console.error(e);
       }
-      });
+    
+    }
     });
-    
-    // 1). Launches processing of links and relations *before* the client application boots above
-    const initRequest = await fetch(HYPERTOAST_ENTRYPOINT_URL);  
-    const response = await initRequest.json();
-    
-    htReuben.parseAdvertisedLinks(response._links);
-    await htReuben.cacheAdvertisedLinkRelations();
+  });
+  
+  // 1). Launches processing of links and relations *before* the client application boots above
+  const initRequest = await fetch(HYPERTOAST_ENTRYPOINT_URL);  
+  const response = await initRequest.json();
+  
+  htReuben.parseAdvertisedLinks(response._links);
+  await htReuben.cacheAdvertisedLinkRelations();
     
   } catch(e) {
     console.error(e);
@@ -116,6 +116,9 @@ app.get('/multigrain/status', (req, res) => {
   });
 });
 
+/**
+ * Returns all registered services
+ */
 app.get('/multigrain/v1/services', (req, res) => {
   const serviceList = serviceRegistry.getEntries();
 
@@ -125,6 +128,9 @@ app.get('/multigrain/v1/services', (req, res) => {
   });
 });
 
+/**
+ * Registers a given application instance for a specified service
+ */
 app.post('/multigrain/v1/services/register', (req, res) => {
   console.log(`Registering service... (${req.body.name})`);
   serviceRegistry.addEntry({
@@ -139,6 +145,9 @@ app.post('/multigrain/v1/services/register', (req, res) => {
   });
 });
 
+/**
+ * Returns all processed toast requests
+ */
 app.get('/multigrain/v1/toast', (req, res) => {
   const toastList = Object.values(TOAST_READY);
   
@@ -148,6 +157,9 @@ app.get('/multigrain/v1/toast', (req, res) => {
   });
 });
 
+/**
+ * Queues a new request for toast
+ */
 app.post('/multigrain/v1/toast', (req, res) => {
   const id = `toast:${randomPetName(2, '-')}:${crypto.randomUUID()}`;
   const myMessage = new Message(
@@ -178,16 +190,16 @@ app.post('/multigrain/v1/toast', (req, res) => {
 });
   
 app.use((req, res) => {
-    res.status(404).send({ status: 404, error: 'Not Found' });
+  res.status(404).send({ status: 404, error: 'Not Found' });
 });
   
 app.use((err, req, res, next) => {
-    const status = err.status || 500;
-    console.error(err);
-    res.status(status).send({ status, error: 'There was an error.' });
+  const status = err.status || 500;
+  console.error(err);
+  res.status(status).send({ status, error: 'There was an error.' });
 });
 
 app.listen(PORT, () => {
-    console.log(banner);
-    console.log(` App listening at http://localhost:${PORT}`);
+  console.log(banner);
+  console.log(`\nApp listening at http://localhost:${PORT}`);
 });

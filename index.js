@@ -270,5 +270,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   registerContainer();
   console.log(banner);
-  console.log(`\nApp (${INSTANCE_NAME}) listening at http://localhost:${PORT}`);
+  console.log(`\nApp (${INSTANCE_NAME}) listening at ` + (containerIP ? `http://${containerIP}:${PORT}` : `http://localhost:${PORT}`));
 });
