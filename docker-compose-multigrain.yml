@@ -9,12 +9,14 @@ services:
     environment:
       APP_NAME: hypertoast
       APP_VERSION: "0.0.1"
-      BROKER_REGISTRATION_URL: http://multigrain:3010/multigrain/v1/services/register
+      BROKER_REGISTRATION_URL: http://multigrain:3010/multigrain/v1/services
     expose:
       - 3010
     volumes:
       - ./:/src
     scale: 3
+    depends_on:
+      - hypertoast_client
     networks:
       - shared_network
     restart: always
@@ -32,8 +34,6 @@ services:
       KAFKA_GROUP_ID: pumpernickel_group
     expose:
       - 3010
-    depends_on:
-      - hypertoast
     volumes:
       - ./:/src
     restart: always

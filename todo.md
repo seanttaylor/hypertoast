@@ -4,5 +4,3 @@
 * Extend the HyperToast application to support real-time notifications via HTTP callback
 * Examine the `HTIterable` class's retry logic to ensure retries are appropriately spaced
 * Investigate addition of dead letter queue for handling dropped toast requests
-* Add service deregistration capability to Multigrain (e.g. `[DELETE] /multigrain/v1/services/:service-uri`)
-* Ensure HyperToast service instances deregister when they crash or shut down

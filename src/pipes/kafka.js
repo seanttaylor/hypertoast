@@ -37,7 +37,7 @@ export default class KafkaDataPipe extends DataPipe {
             throw Error(`StreamService.BadRequest => onMessage must be of type function, not (${typeof onMessage})`);
         }
 
-        await this.#consumer.subscribe({ topic, fromBeginning: true });
+    await this.#consumer.subscribe({ topic, fromBeginning: true });
         await this.#consumer.run({
             eachMessage: onMessage,
         });

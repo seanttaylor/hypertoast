@@ -1,6 +1,6 @@
 import { AsyncIterator, Iterable } from './async-iterator.js';
+import { setTimeout} from 'timers/promises';
 import SmartRouter from './smart-router.js';
-import { setTimeout } from 'timers/promises';
 
 /**
  * Contains all registered service instances and the 
@@ -16,11 +16,11 @@ class ServiceRegistry {
 
   /**
    * Adds an entry to the registry
-   * @param {String} uri - colon-separated string in the following format (`namespace:entryName`)
+   * @param {String} urn - colon-separated string in the following format (`namespace:entryName`)
    * @param {Object} entry
    */
-  addEntry({ uri, entry }) {
-    const [ namespace ] = uri.split(':');
+  addEntry({ urn, entry }) {
+    const [ namespace ] = urn.split(':');
     
     if (!this.#entries[namespace]) {
       this.#entries[namespace] = {};
@@ -35,11 +35,23 @@ class ServiceRegistry {
    */
   getEntries() {
     try {
+      // We may eventually have namespaces other than `hypertoast`
       return Object.values(this.#entries.hypertoast);
       // The only reason this fails is if there are no services registered
     } catch(e) {
       return [];
     }
+  }
+
+  /**
+   * Deregisters a service
+   * @param {String} urn
+   */
+  removeEntry(urn) {
+    const [ namespace, entryName ] = urn.split(':');
+    // We may eventually have namespaces other than `hypertoast`
+    const serviceEntry = Object.values(this.#entries.hypertoast).find((entry) => entry.name === entryName);
+    delete this.#entries.hypertoast[serviceEntry.host];
   }
 
   static getInstance() {
@@ -77,8 +89,8 @@ class HTIterable extends Iterable {
     if (this.#currentIdx === this.#entries.length) {
       this.#currentIdx = 0;
       this.#retries++; 
-      console.info(`Info: no available instances found. Retrying in (${this.#RETY_TIMEOUT/1000}) seconds`);
-      await setTimeout(10000);
+      console.info(`Info: No available instances found. Retrying in (${(this.#RETY_TIMEOUT * this.#retries) / 1000}) seconds`);
+      await setTimeout(this.#RETY_TIMEOUT * this.#retries);
     }
     
     const done = this.#retries === this.#MAX_RETRIES;
@@ -117,7 +129,7 @@ class HTSmartRouter extends SmartRouter {
     for await (const instance of htInstanceList) {
       const { name, host, port } = instance;
 
-      console.info(`Info: Querying instance status... (${name})`);
+      // console.info(`Info: Querying instance status... (${name})`);
 
       const statusQuery = await fetch(`${host}:${port}/hypertoast/v1/status`);
       const statusQueryResponse = await statusQuery.json();
@@ -127,6 +139,7 @@ class HTSmartRouter extends SmartRouter {
         console.info(`Info: Available instance located... (${name})`);
         return instance;
       }
+      //return this.getAppInstanceMetadata();
     }
   }
 }

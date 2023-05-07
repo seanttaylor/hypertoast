@@ -40,6 +40,8 @@ const containerIP = await getContainerIP();
 const banner = await figletize(`${APP_NAME} v${APP_VERSION}`);
 const app = express();
 
+let server;
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('tiny'));
@@ -143,13 +145,24 @@ async function registerContainer() {
       name: INSTANCE_NAME,
       host: `http://${containerIP}`,
       port: PORT,
-      uri: `hypertoast:${INSTANCE_NAME}`
+      urn: `hypertoast:${INSTANCE_NAME}`
     }),
     headers: {
       'content-type': 'application/json'
     }
   });
+}
 
+/**
+ * Deregisters the container with the Multigrain broker
+ */
+function deregisterContainer() {
+  console.info(`Info: Deregistering service...`);
+
+  // We don't need to await any results from this call
+  fetch(`${BROKER_REGISTRATION_URL}/hypertoast:${INSTANCE_NAME}`, {
+    method: 'DELETE',
+  });
 }
 
 
@@ -267,8 +280,17 @@ app.use((err, req, res, next) => {
   res.status(status).send({ status, error: 'There was an error.' });
 });
 
-app.listen(PORT, () => {
+server = app.listen(PORT, () => {
   registerContainer();
   console.log(banner);
   console.log(`\nApp (${INSTANCE_NAME}) listening at ` + (containerIP ? `http://${containerIP}:${PORT}` : `http://localhost:${PORT}`));
 });
+
+process.on('SIGTERM', () => {
+  console.warn(`Warn: SIGTERM signal received: shutting down... (${INSTANCE_NAME})`);
+  deregisterContainer();
+
+  server.close(() => {
+    console.warn(`Warn: (${INSTANCE_NAME}) offline`)
+  });
+})

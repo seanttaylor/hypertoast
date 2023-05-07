@@ -1,4 +1,5 @@
 import { promisify } from 'util';
+import { setTimeout } from 'timers/promises';
 import crypto from 'crypto';
 
 import figlet from 'figlet';
@@ -39,8 +40,14 @@ const kafkaDP = new KafkaDataPipe({
  */
 const HTClientSmartRoutingPlugin = {
   async findAvailableToaster() {
-    const instanceMetadata = await smartRouter.getAppInstanceMetadata();
-    // `this` refers to an instance of {HyperToastClient}. See (./src/ht-client/index.js).
+    let instanceMetadata; 
+
+    while (!instanceMetadata) {
+      //setTimeout(async () => {
+        instanceMetadata = await smartRouter.getAppInstanceMetadata();
+      //}, 0);
+    }
+    // `this` refers to an instance of {HyperToastClient}. See (./src/ht-client/index.js)
     this.setApplicationRootURL(`${instanceMetadata.host}:${instanceMetadata.port}`);
   }
 };
@@ -64,13 +71,13 @@ try {
     
     kafkaDP.onPull({ topic: 'ingress', onMessage: async ({ message }) => {
       const { payload } = JSON.parse(message.value.toString());
-      const { id, ...preferences } = payload;        
+      const { id, urn, ...preferences } = payload;        
 
       try {
         await cuizzineArt.findAvailableToaster.call(htClient);
         const notificationHook = cuizzineArt.enablePushNotifications();
 
-        await cuizzineArt.setCookPreferences({ ...preferences, _open: { toastId: id } });
+        await cuizzineArt.setCookPreferences({ ...preferences, _open: { id, urn } });
         await cuizzineArt.makeToast();
         
         notificationHook.addEventListener('toaster-off', (event)=> {
@@ -78,13 +85,18 @@ try {
           // learn when the toast is ready via Server-Sent Event
           const { payload } = JSON.parse(event.data);
           
-          TOAST_READY[payload.settings._open.toastId] = {
+          TOAST_READY[payload.settings._open.urn] = {
             timestamp: payload.state.timestamp,
             deviceName: payload.deviceName,
-            id: payload.settings._open.toastId
+            urn: payload.settings._open.urn,
+            id: payload.settings._open.id
           };
 
-          console.log(`Received HyperToast message from: (${payload.deviceName})`);
+          console.log('Info: Received HyperToast message', { 
+            from: payload.deviceName, 
+            re: payload.settings._open.urn,
+            at: new Date().toISOString()
+          });
         });    
 
       } catch(e) {
@@ -131,19 +143,36 @@ app.get('/multigrain/v1/services', (req, res) => {
 /**
  * Registers a given application instance for a specified service
  */
-app.post('/multigrain/v1/services/register', (req, res) => {
+app.post('/multigrain/v1/services', (req, res) => {
   console.log(`Registering service... (${req.body.name})`);
   serviceRegistry.addEntry({
-    uri: `${req.body.uri}`,
+    urn: req.body.urn,
     entry: req.body
   });
   
   res.json({
-    serviceName: req.body.name,
-    serviceURI: req.body.uri,
+    name: req.body.name,
+    urn: req.body.urn,
     timestamp: new Date().toISOString()
   });
 });
+
+
+app.delete('/multigrain/v1/services/:urn', (req, res) => {
+  try {
+    serviceRegistry.removeEntry(req.params.urn);
+    res.status(204);
+    res.end();
+  } catch(e) {
+    // Most likely reason for serviceRegistry to throw is the entry doesn't exist
+    // Throwing isn't the best solution here since an entry not being found isn't an exception
+    // But for the sake of expediency...
+    res.status(404),
+    res.end();
+  }
+});
+
+
 
 /**
  * Returns all processed toast requests
@@ -161,14 +190,15 @@ app.get('/multigrain/v1/toast', (req, res) => {
  * Queues a new request for toast
  */
 app.post('/multigrain/v1/toast', (req, res) => {
-  const id = `toast:${randomPetName(2, '-')}:${crypto.randomUUID()}`;
+  const id = crypto.randomUUID();
+  const urn = `toast:${randomPetName(2, '-')}:${id}`;
   const myMessage = new Message(
     new MessageHeader({
-      id: `/multigrain/v1/toast/${id}`,
+      id: `${crypto.randomUUID()}`,
       eventType: 'create',
       eventName: 'make.toast',
   }),
-    new MessageBody({ id, ...req.body })
+    new MessageBody({ id, urn, ...req.body })
   );
 
   try { 
@@ -177,7 +207,7 @@ app.post('/multigrain/v1/toast', (req, res) => {
       message: JSON.stringify(myMessage.value())
     });
 
-    res.json({ id, ...req.body });
+    res.json({ id, urn, ...req.body });
   } catch(e) {
     console.error(e);
 
