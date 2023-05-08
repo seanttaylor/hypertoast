@@ -39,14 +39,19 @@ const kafkaDP = new KafkaDataPipe({
  * HyperToast application instances to HyperToastClient
  */
 const HTClientSmartRoutingPlugin = {
-  async findAvailableToaster() {
+  /**
+   * @param {String|null} name - optional application instance name; if specified, returns the named 
+   * application instance
+   */
+  async findAvailableToaster(name) {
     let instanceMetadata; 
 
-    while (!instanceMetadata) {
-      //setTimeout(async () => {
-        instanceMetadata = await smartRouter.getAppInstanceMetadata();
-      //}, 0);
+    if (!name) {
+      instanceMetadata = await smartRouter.getAppInstanceMetadata();
+    } else {
+      instanceMetadata = smartRouter.getAppInstanceMetadataByInstanceName(name);
     }
+    
     // `this` refers to an instance of {HyperToastClient}. See (./src/ht-client/index.js)
     this.setApplicationRootURL(`${instanceMetadata.host}:${instanceMetadata.port}`);
   }
@@ -65,7 +70,6 @@ app.use(morgan('tiny'));
 try {
   const htReuben = new HTReuben(HYPERTOAST_ROOT_URL, async function onReady(htClient) {
     // 2). Executes when the link and relations processing is *completed* 
-
     let cuizzineArt = new HyperToastClientWrapper(htClient);
     cuizzineArt = Object.assign(cuizzineArt, HTClientSmartRoutingPlugin);
     
